@@ -11,6 +11,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support.ui import WebDriverWait
 
+from webdriver_manager.chrome import ChromeDriverManager
 from urllib.request import Request, urlretrieve, URLopener
 from time import sleep
 import os
@@ -24,8 +25,6 @@ def prepare():
     url = f'https://pixabay.com/ko/{theme}/search/' # 한국어 검색어에 대한 url 생성
 
     # connect to webdriver (by ChromeDriverManager)
-
-    from webdriver_manager.chrome import ChromeDriverManager
 
     driver = webdriver.Chrome(ChromeDriverManager().install())
     driver.get(url=url)
@@ -65,6 +64,7 @@ def get_png_file():
     print(f"<{theme}> 의 검색 결과 페이지 수 : ", page_num)
 
     headers={'User-Agent': 'Mozilla/5.0'}
+
     for i in range(1, page_num+1):
         img_url = get_img_url()
         print(f'{i}_page에서 찾은 이미지 개수 : {len(img_url)}')
@@ -72,10 +72,10 @@ def get_png_file():
             file_name = link.split('/')[-1].split('.')[-2]
             os.system(f'curl {link} > {folder_name}/{file_name}.png')
         try:
-            driver.find_element(by=By.XPATH, value='//*[@id="onetrust-close-btn-container"]/button').click() # 팝업창 뜰 시에 창 닫기
+            driver.find_element(by=By.XPATH, value='//*[@id="onetrust-close-btn-container"]/button').click() # 팝업창 뜰 시에 창 닫기 버튼 클릭
         except:
             pass
-        driver.find_element(by=By.XPATH, value='//*[@id="app"]/div[2]/div[4]/div[1]/div[2]/a').click()
+        driver.find_element(by=By.XPATH, value='//*[@id="app"]/div[2]/div[4]/div[1]/div[2]/a').click() # 다음 페이지 이동 버튼 클릭
         sleep(3)
 
 def main():
