@@ -1,6 +1,6 @@
-# 1. import library
+# import library
 
-import seleniu기
+import selenium
 from selenium import webdriver
 from selenium.webdriver import ActionChains
 
