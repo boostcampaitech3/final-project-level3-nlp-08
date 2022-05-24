@@ -41,7 +41,6 @@ summarization_name_mapping = {
 
 def main():
     logger = get_logger('train')
-
     model_args, data_args, training_args = return_config()
 
     set_seed(training_args.seed)
