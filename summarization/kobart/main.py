@@ -15,13 +15,14 @@ import datasets.arrow_dataset as da
 
 from logger.logger import *
 
-# 이건 필요 없을듯?
+from data_loader.pre_postprocess import *
+
+# TODO 이건 필요 없을듯?
 # require_version("datasets>=1.8.0", "To fix: pip install -r examples/pytorch/summarization/requirements.txt")
 
-# nltk는 사용하지 않으므로 제거
+# TODO nltk는 사용하지 않으므로 제거
 
-# 1. 이게 Task에 따른 요약본을 말하는거 같은데, 굳이 있을 필요가 있을까?
-# 어차피 우리는 aihub만 이용할거니깐
+# TODO 이게 Task에 따른 요약본을 말하는거 같은데, 굳이 있을 필요가 있을까? 어차피 우리는 aihub만 이용할거니깐
 summarization_name_mapping = {
     "amazon_reviews_multi": ("review_body", "review_title"),
     "big_patent": ("description", "abstract"),
@@ -40,18 +41,19 @@ summarization_name_mapping = {
 
 
 def main():
+    # TODO logger 및 Config 명령을 다른 곳으로 뺐음
     logger = get_logger('train')
     model_args, data_args, training_args = return_config()
 
     set_seed(training_args.seed)
 
+    # TODO log에 띄우는 현 상태를 간소화시킴. Args는 굳이 Log로 찍을 필요가 없을듯 싶다
     logger.info(
         f"device: {training_args.device}, n_gpu: {training_args.n_gpu}, 16-bits training: {training_args.fp16}"
     )
     # logger.info(f"Training/evaluation parameters {training_args}")
-    # Args는 굳이 Log로 찍을 필요가 없을듯 싶다
 
-    # t5 model 전용 prefix 설정하는게 아니라 Log에 관련된 메서든데 넣어야할까?
+    # TODO t5 model 전용 prefix 설정하는게 아니라 Log에 관련된 메서든데 넣어야할까?
     if data_args.source_prefix is None and model_args.model_name_or_path in [
         "t5-small",
         "t5-base",
@@ -64,7 +66,7 @@ def main():
             "`--source_prefix 'summarize: ' `"
         )
 
-    # 나는 개인적으로 last_checkpoint를 활용하지 않는 주읜데, 이거 토의해보고 만약 활용하지 않는다고 하면 삭제
+    # TODO 나는 개인적으로 last_checkpoint를 활용하지 않는 주읜데, 이거 토의해보고 만약 활용하지 않는다고 하면 삭제
     last_checkpoint = None
     if os.path.isdir(training_args.output_dir) and training_args.do_train and not training_args.overwrite_output_dir:
         last_checkpoint = get_last_checkpoint(training_args.output_dir)
@@ -79,6 +81,8 @@ def main():
                 "the `--output_dir` or add `--overwrite_output_dir` to train from scratch."
             )
 
+
+    # TODO Dataset을 다른 함수에서 만드는 것으로 했음
     datasets = da.Dataset.from_pandas(get_raw_data(logger=logger))
 
     raw_datasets = datasets.map(flatten, remove_columns=['id'], batched = True)
@@ -86,7 +90,7 @@ def main():
     tokenizer = PTTFwithSaveVocab.from_pretrained(model_args.model_name_or_path)
     model = BartForConditionalGeneration.from_pretrained(model_args.model_name_or_path)
 
-    # tokenizer과 model이 같은 것을 활용하는거 같은데 이 명령어가 필요할까?
+    # TODO tokenizer과 model이 같은 것을 활용하는거 같은데 이 명령어가 필요할까?
     model.resize_token_embeddings(len(tokenizer))
     # TODO: position embedding 크기 resize
     if (
@@ -108,17 +112,17 @@ def main():
                 f" `--max_source_length` to {model.config.max_position_embeddings} or to automatically resize the"
                 " model's position encodings by passing `--resize_position_embeddings`."
             )
+    ##################################################################################
 
-    # Decoder 시작 토큰 설정
+    # TODO 이게 왜 필요한거죠? Decoder 시작 토큰 설정
     if model.config.decoder_start_token_id is None:
         raise ValueError("Make sure that `config.decoder_start_token_id` is correctly defined")
 
-    prefix = data_args.source_prefix if data_args.source_prefix is not None else ""
+    # TODO t5 활용할 때만 사용
+    if model_args.use_t5:
+        prefix = data_args.source_prefix if data_args.source_prefix is not None else ""
 
-    # Preprocessing the datasets.
-    # We need to tokenize inputs and targets.
-
-   #===========================================================#
+    # TODO 이 부분은 도저히 나 혼자 판단하여 수정할 수 있는 부분이 아님. 따라서 보류
     # eval과 train 데이터 형식이 똑같아서 합쳐봄
     if training_args.do_train or training_args.do_eval:
         column_names = raw_datasets.column_names
@@ -148,9 +152,7 @@ def main():
             )
     # ===========================================================================================================================
 
-
-    # target값 최대 길이 설정 및 padding 설정
-    # Temporarily set max_target_length for training.
+    max_source_length = data_args.max_source_length
     max_target_length = data_args.max_target_length
     padding = "max_length" if data_args.pad_to_max_length else False
 
@@ -161,55 +163,24 @@ def main():
             f"`{model.__class__.__name__}`. This will lead to loss being calculated twice and will take up more memory"
         )
 
-    # 데이터 preprocess 과정
-    def preprocess_function(examples):
-        inputs, targets = examples['dialogue'], examples['summary']
+    train_data_txt, validation_data_txt = raw_datasets.train_test_split(test_size=0.1).values()
 
-        # input에 prefix 추가 (t5 계열 모델만 prefix 사용함)
-        inputs = [prefix + inp for inp in inputs]
-        # prefix 추가한 input text를 tokenizer 통해 id로 변경 == model_inputs
-
-        model_inputs = tokenizer(inputs, max_length=data_args.max_source_length, padding=padding, truncation=True)
-
-        labels = tokenizer(targets, padding=padding, truncation=True, max_length=max_target_length)
-
-        # target summary를 tokenizer 통해 id로 변경 == labels
-        # Setup the tokenizer for targets
-        with tokenizer.as_target_tokenizer():
-            labels = tokenizer(targets, max_length=max_target_length, padding=padding, truncation=True)
-
-        batch = {k:v for k, v in model_inputs.items()}
-
-        batch['labels'] = [
-            [-100 if token == tokenizer.pad_token_id else token for token in l]
-            for l in labels["input_ids"]
-        ]
-        # If we are padding here, replace all tokenizer.pad_token_id in the labels by -100 when we want to ignore
-        # padding in the loss.
-        # labels에서 padding 있으면 loss 계산 위해 pad_token_id를 -100으로 설정해서 무시하도록 함
-        if padding == "max_length" and data_args.ignore_pad_token_for_loss:
-            labels["input_ids"] = [
-                [(l if l != tokenizer.pad_token_id else -100) for l in label] for label in labels["input_ids"]
-            ]
-
-        # model에 입력으로 들어가면 inputs (text)에 labels 달아서 전달함
-        # 이 때 이미 preprocess_function 시작부분에서 input-target쌍 맞는 것만 사용하기 때문에 쌍은 항상 일치
-        model_inputs["labels"] = labels["input_ids"]
-        return batch
-
-    train_data_txt, validation_data_txt = raw_datasets.train_test_split(test_size=0.05).values()
-
-    # train 과정
+    # TODO raw_data에서 ['train', 'validataion']으로 나눈게 아니라 약간으 수정이 들어갔음
     if training_args.do_train:
-        if "train" not in raw_datasets:
-            raise ValueError("--do_train requires a train dataset")
         train_dataset = train_data_txt
+
         if data_args.max_train_samples is not None:
             max_train_samples = min(len(train_dataset), data_args.max_train_samples)
             train_dataset = train_dataset.select(range(max_train_samples))
 
         train_dataset = train_dataset.map(
-            preprocess_function,
+            lambda example:preprocess_function(examples=example,
+                                               tokenizer=tokenizer,
+                                               max_source_length=max_source_length,
+                                               max_target_length=max_target_length,
+                                               padding=padding,
+                                               use_t5=model_args.use_t5,
+                                               prefix=prefix if model_args.use_t5 else None),
             batched=True,
             num_proc=data_args.preprocessing_num_workers,
             remove_columns=column_names,
@@ -225,17 +196,15 @@ def main():
         if data_args.max_eval_samples is not None:
             max_eval_samples = min(len(eval_dataset), data_args.max_eval_samples)
             eval_dataset = eval_dataset.select(range(max_eval_samples))
-        # with training_args.main_process_first(desc="validation dataset map pre-processing"):
-        #     eval_dataset = eval_dataset.map(
-        #         preprocess_function,
-        #         batched=True,
-        #         num_proc=data_args.preprocessing_num_workers,
-        #         remove_columns=column_names,
-        #         load_from_cache_file=not data_args.overwrite_cache,
-        #         desc="Running tokenizer on validation dataset",
-        #     )
+
         eval_dataset = eval_dataset.map(
-            preprocess_function,
+            lambda example: preprocess_function(examples=example,
+                                                tokenizer=tokenizer,
+                                                max_source_length=max_source_length,
+                                                max_target_length=max_target_length,
+                                                padding=padding,
+                                                use_t5=model_args.use_t5,
+                                                prefix=prefix if model_args.use_t5 else None),
             batched=True,
             num_proc=data_args.preprocessing_num_workers,
             remove_columns=column_names,
@@ -243,6 +212,9 @@ def main():
             desc="Running tokenizer on validation dataset",
         )
 
+    
+    """
+    TODO 위에서 말했듯, do_predict가 train.py에 필요한가? 싶음
     if training_args.do_predict:
         max_target_length = data_args.val_max_target_length
         if "test" not in raw_datasets:
@@ -260,6 +232,7 @@ def main():
             load_from_cache_file=not data_args.overwrite_cache,
             desc="Running tokenizer on prediction dataset",
         )
+    """
 
     # Data collator
     label_pad_token_id = -100 if data_args.ignore_pad_token_for_loss else tokenizer.pad_token_id
@@ -329,15 +302,17 @@ def main():
         train_result = trainer.train(resume_from_checkpoint=checkpoint)
         trainer.save_model()  # Saves the tokenizer too for easy upload
 
+        """일반 Metric을 활용하지 않으므로 일단 주석 처리
         metrics = train_result.metrics
         max_train_samples = (
             data_args.max_train_samples if data_args.max_train_samples is not None else len(train_dataset)
         )
         metrics["train_samples"] = min(max_train_samples, len(train_dataset))
 
-        trainer.log_metrics("train", metrics)
-        trainer.save_metrics("train", metrics)
+        # trainer.log_metrics("train", metrics)
+        # trainer.save_metrics("train", metrics)
         #trainer.save_state()
+        """
         trainer.state.save_to_json(
             os.path.join(training_args.output_dir, "trainer_state.json")
         )
@@ -360,6 +335,7 @@ def main():
         trainer.log_metrics("eval", metrics)
         trainer.save_metrics("eval", metrics)
 
+    """
     if training_args.do_predict:
         logger.info("*** Predict ***")
 
@@ -388,7 +364,8 @@ def main():
                 output_prediction_file = os.path.join(training_args.output_dir, "generated_predictions.txt")
                 with open(output_prediction_file, "w") as writer:
                     writer.write("\n".join(predictions))
-
+    """
+    
     kwargs = {"finetuned_from": model_args.model_name_or_path, "tasks": "summarization"}
     if data_args.dataset_name is not None:
         kwargs["dataset_tags"] = data_args.dataset_name
