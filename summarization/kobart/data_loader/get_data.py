@@ -6,6 +6,7 @@ from tqdm import tqdm
 import pickle
 import logging
 
+
 def flatten(example):
     dialogue_list = []
 
@@ -56,3 +57,5 @@ def get_raw_data(logger:logging.Logger):
 
     return return_df
 
+if __name__=='main':
+    print(get_raw_data(logger=None).head())
