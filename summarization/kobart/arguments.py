@@ -1,6 +1,26 @@
 from typing import Optional
 from dataclasses import dataclass, field
 
+import yaml
+from transformers import TrainingArguments, Seq2SeqTrainingArguments
+
+def return_config():
+    with open('./configs.yaml') as f:
+        configs = yaml.load(f, Loader=yaml.FullLoader)
+
+    training_args, model_args, data_args = configs['TrainingArguments'], \
+                                           configs['ModelArguments'], \
+                                           configs['DataTrainingArguments']
+
+
+    model_args = ModelArguments(**model_args)
+    data_args = DataTrainingArguments(**data_args)
+    training_args = Seq2SeqTrainingArguments(**training_args)
+
+    training_args.predict_with_generate = True
+
+    return model_args, data_args, training_args
+
 @dataclass
 class ModelArguments:
     """
@@ -46,7 +66,14 @@ class ModelArguments:
             )
         },
     )
-
+    use_t5: bool = field(
+        default=False,
+        metadata={
+            "help": (
+                "If you want to use T5 for summarization, set this value to True"
+            )
+        },
+    )
 
 @dataclass
 class DataTrainingArguments:
@@ -208,3 +235,7 @@ class DataTrainingArguments:
                 assert extension in ["csv", "json"], "`validation_file` should be a csv or a json file."
         if self.val_max_target_length is None:
             self.val_max_target_length = self.max_target_length
+
+
+if __name__ == "__main__":
+    return_config()
