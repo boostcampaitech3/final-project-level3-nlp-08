@@ -1,3 +1,6 @@
+import nltk
+
+
 def preprocess_function(examples, tokenizer, max_source_length, max_target_length, padding,
                         use_t5:bool = False, prefix:str = None):
     inputs, targets = examples['dialogue'], examples['summary']
@@ -20,3 +23,13 @@ def preprocess_function(examples, tokenizer, max_source_length, max_target_lengt
 
     return batch
 
+def postprocess_text(preds, labels):
+    preds = [pred.strip() for pred in preds]
+    labels = [label.strip() for label in labels]
+
+    # rougeLSum expects newline after each sentence
+    # prediction, labels 각 문장 끝에 줄바꿈 붙이기
+    preds = ["\n".join(nltk.sent_tokenize(pred)) for pred in preds]
+    labels = ["\n".join(nltk.sent_tokenize(label)) for label in labels]
+
+    return preds, labels
