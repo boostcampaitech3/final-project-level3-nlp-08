@@ -78,7 +78,7 @@ class ModelArguments:
         default=False,
         metadata={
             "help": (
-                "If you want to use T5 for summarization, set this value to True"
+                "If you want to use Checkpoint during training, set this value to True"
             )
         },
     )
