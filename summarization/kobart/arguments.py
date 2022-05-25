@@ -74,6 +74,14 @@ class ModelArguments:
             )
         },
     )
+    use_checkpoint: bool = field(
+        default=False,
+        metadata={
+            "help": (
+                "If you want to use T5 for summarization, set this value to True"
+            )
+        },
+    )
 
 @dataclass
 class DataTrainingArguments:

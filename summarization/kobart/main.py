@@ -1,5 +1,7 @@
 import nltk  # Here to have a nice missing dependency error message early on
+import wandb
 from datasets import load_metric
+from utils import return_checkpoint, return_model_and_tokenizer
 
 from transformers import (
     DataCollatorForSeq2Seq,
@@ -23,63 +25,23 @@ def main():
     model_args, data_args, training_args = return_config()
 
     set_seed(training_args.seed)
-    
-    # 모듈화
-    last_checkpoint = None
-    if os.path.isdir(training_args.output_dir) and training_args.do_train and not training_args.overwrite_output_dir:
-        last_checkpoint = get_last_checkpoint(training_args.output_dir)
-        if last_checkpoint is None and len(os.listdir(training_args.output_dir)) > 0:
-            raise ValueError(
-                f"Output directory ({training_args.output_dir}) already exists and is not empty. "
-                "Use --overwrite_output_dir to overcome."
-            )
-        elif last_checkpoint is not None:
-            logger.info(
-                f"Checkpoint detected, resuming training at {last_checkpoint}. To avoid this behavior, change "
-                "the `--output_dir` or add `--overwrite_output_dir` to train from scratch."
-            )
 
-    datasets = da.Dataset.from_pandas(get_raw_data(logger=logger))
+    if model_args.use_checkpoint:
+        last_checkpoint = return_checkpoint(logger=logger, training_args=training_args)
+    else:
+        last_checkpoint = None
 
-    raw_datasets = datasets.map(flatten, remove_columns=['id'], batched = True)
+    sample_dataset = da.Dataset.from_pandas(get_raw_data(logger=logger))
+    raw_datasets = sample_dataset.map(flatten, remove_columns=['id', '__index_level_0__'], batched = True)
+    train_data_txt, validation_data_txt = raw_datasets.train_test_split(test_size=0.1).values()
 
-    tokenizer = PTTFwithSaveVocab.from_pretrained(model_args.model_name_or_path)
-    model = BartForConditionalGeneration.from_pretrained(model_args.model_name_or_path)
-
-    # TODO : position embedding 크기 resize
-    model.resize_token_embeddings(len(tokenizer))
-    if (
-            hasattr(model.config, "max_position_embeddings")
-            and model.config.max_position_embeddings < data_args.max_source_length
-    ):
-        if model_args.resize_position_embeddings is None:
-            logger.warning(
-                "Increasing the model's number of position embedding vectors from"
-                f" {model.config.max_position_embeddings} to {data_args.max_source_length}."
-            )
-            model.resize_position_embeddings(data_args.max_source_length)
-        elif model_args.resize_position_embeddings:
-            model.resize_position_embeddings(data_args.max_source_length)
-        else:
-            raise ValueError(
-                f"`--max_source_length` is set to {data_args.max_source_length}, but the model only has"
-                f" {model.config.max_position_embeddings} position encodings. Consider either reducing"
-                f" `--max_source_length` to {model.config.max_position_embeddings} or to automatically resize the"
-                " model's position encodings by passing `--resize_position_embeddings`."
-            )
-
-    if model.config.decoder_start_token_id is None:
-        raise ValueError("Make sure that `config.decoder_start_token_id` is correctly defined")
+    tokenizer, model = return_model_and_tokenizer(logger=logger, model_args=model_args, data_args=data_args)
 
     if model_args.use_t5:
         prefix = data_args.source_prefix if data_args.source_prefix is not None else ""
         dataset_columns = ("dialogue", "summary")
 
-    max_source_length = data_args.max_source_length
-    max_target_length = data_args.max_target_length
     padding = "max_length" if data_args.pad_to_max_length else False
-
-    train_data_txt, validation_data_txt = raw_datasets.train_test_split(test_size=0.1).values()
 
     if training_args.do_train:
         train_dataset = train_data_txt
@@ -87,8 +49,8 @@ def main():
         train_dataset = train_dataset.map(
             lambda example:preprocess_function(examples=example,
                                                tokenizer=tokenizer,
-                                               max_source_length=max_source_length,
-                                               max_target_length=max_target_length,
+                                               max_source_length=data_args.max_source_length,
+                                               max_target_length=data_args.max_target_length,
                                                padding=padding,
                                                use_t5=model_args.use_t5,
                                                prefix=prefix if model_args.use_t5 else None),
@@ -98,13 +60,12 @@ def main():
         )
 
     if training_args.do_eval:
-        eval_dataset = raw_datasets["validation"]
-
+        eval_dataset = validation_data_txt
         eval_dataset = eval_dataset.map(
             lambda example: preprocess_function(examples=example,
                                                 tokenizer=tokenizer,
-                                                max_source_length=max_source_length,
-                                                max_target_length=max_target_length,
+                                                max_source_length=data_args.max_source_length,
+                                                max_target_length=data_args.max_target_length,
                                                 padding=padding,
                                                 use_t5=model_args.use_t5,
                                                 prefix=prefix if model_args.use_t5 else None),
@@ -132,27 +93,7 @@ def main():
             desc="Running tokenizer on prediction dataset",
         )
 
-    # Data collator
-    label_pad_token_id = -100 if data_args.ignore_pad_token_for_loss else tokenizer.pad_token_id
-    data_collator = DataCollatorForSeq2Seq(
-        tokenizer,
-        model=model,
-        label_pad_token_id=label_pad_token_id,
-        pad_to_multiple_of=8 if training_args.fp16 else None,
-    )
-
     metric = load_metric("rouge")
-
-    def postprocess_text(preds, labels):
-        preds = [pred.strip() for pred in preds]
-        labels = [label.strip() for label in labels]
-
-        # rougeLSum expects newline after each sentence
-        # prediction, labels 각 문장 끝에 줄바꿈 붙이기
-        preds = ["\n".join(nltk.sent_tokenize(pred)) for pred in preds]
-        labels = ["\n".join(nltk.sent_tokenize(label)) for label in labels]
-
-        return preds, labels
 
     def compute_metrics(eval_preds):
         preds, labels = eval_preds
@@ -178,6 +119,16 @@ def main():
         result = {k: round(v, 4) for k, v in result.items()}
         return result
 
+    # Data collator
+    data_collator = DataCollatorForSeq2Seq(
+        tokenizer,
+        model=model,
+        label_pad_token_id=-100 if data_args.ignore_pad_token_for_loss else tokenizer.pad_token_id,
+        pad_to_multiple_of=8 if training_args.fp16 else None,
+    )
+
+    print(len(train_dataset))
+    wandb.init(project="project", entity="violetto", name= 'delete')
     # Initialize our Trainer
     trainer = Seq2SeqTrainer(
         model=model,
@@ -196,6 +147,7 @@ def main():
             checkpoint = last_checkpoint
         elif os.path.isdir(model_args.model_name_or_path):
             checkpoint = model_args.model_name_or_path
+
         train_result = trainer.train(resume_from_checkpoint=checkpoint)
         trainer.save_model()  # Saves the tokenizer too for easy upload
 
