@@ -2,18 +2,19 @@ import nltk  # Here to have a nice missing dependency error message early on
 import wandb
 from datasets import load_metric
 from utils import return_checkpoint, return_model_and_tokenizer
+from sentence_transformers import SentenceTransformer,  LoggingHandler, losses, models, util
 
 from transformers import (
     DataCollatorForSeq2Seq,
     set_seed,
-    BartForConditionalGeneration
+    BartForConditionalGeneration,
+    Seq2SeqTrainingArguments
 )
 from transformers.trainer_utils import get_last_checkpoint
 
 from arguments import *
-from data_loader.get_data import get_raw_data, flatten
+from data_loader.get_data import get_raw_data, flatten, return_data
 from model.tokenizer import *
-import datasets.arrow_dataset as da
 
 from logger.logger import *
 
@@ -21,26 +22,35 @@ from data_loader.processing import *
 
 
 def main():
+    # Setting Log
     logger = get_logger('train')
+
+    # Setting Argument
     model_args, data_args, training_args = return_config()
 
+    training_args.include_inputs_for_metrics=True
+
+    # Setting Seed
     set_seed(training_args.seed)
 
+    # Bring Checkpoint
     if model_args.use_checkpoint:
         last_checkpoint = return_checkpoint(logger=logger, training_args=training_args)
     else:
         last_checkpoint = None
 
-    sample_dataset = da.Dataset.from_pandas(get_raw_data(logger=logger))
-    raw_datasets = sample_dataset.map(flatten, remove_columns=['id', '__index_level_0__'], batched = True)
-    train_data_txt, validation_data_txt = raw_datasets.train_test_split(test_size=0.1).values()
+    # Bring Dataset
+    train_data_txt, validation_data_txt = return_data(logger=logger)
 
+    # Bring Tokenizer & Model
     tokenizer, model = return_model_and_tokenizer(logger=logger, model_args=model_args, data_args=data_args)
 
+    # T5 Setting
     if model_args.use_t5:
         prefix = data_args.source_prefix if data_args.source_prefix is not None else ""
         dataset_columns = ("dialogue", "summary")
 
+    # Change Data to Dataset
     padding = "max_length" if data_args.pad_to_max_length else False
 
     if training_args.do_train:
@@ -56,7 +66,7 @@ def main():
                                                prefix=prefix if model_args.use_t5 else None),
             batched=True,
             num_proc=data_args.preprocessing_num_workers,
-            remove_columns=raw_datasets.column_names
+            remove_columns=train_data_txt.column_names
         )
 
     if training_args.do_eval:
@@ -71,15 +81,15 @@ def main():
                                                 prefix=prefix if model_args.use_t5 else None),
             batched=True,
             num_proc=data_args.preprocessing_num_workers,
-            remove_columns=raw_datasets.column_names
+            remove_columns=validation_data_txt.column_names
         )
 
     # TODO do_predict 바꾸기
     if training_args.do_predict:
         max_target_length = data_args.val_max_target_length
-        if "test" not in raw_datasets:
+        if "test" not in train_dataset:
             raise ValueError("--do_predict requires a test dataset")
-        predict_dataset = raw_datasets["test"]
+        predict_dataset = train_dataset["test"]
         if data_args.max_predict_samples is not None:
             max_predict_samples = min(len(predict_dataset), data_args.max_predict_samples)
             predict_dataset = predict_dataset.select(range(max_predict_samples))
@@ -88,24 +98,64 @@ def main():
             preprocess_function,
             batched=True,
             num_proc=data_args.preprocessing_num_workers,
-            remove_columns=raw_datasets.column_names,
+            remove_columns=train_dataset.column_names,
             load_from_cache_file=not data_args.overwrite_cache,
             desc="Running tokenizer on prediction dataset",
         )
 
     metric = load_metric("rouge")
 
+    #### Cutting
+    pretrained_model_name = 'klue/roberta-base'
+
+    # Load Embedding Model
+    embedding_model = models.Transformer(
+        model_name_or_path=pretrained_model_name,
+        max_seq_length=256,
+        do_lower_case=True
+    )
+
+    # Only use Mean Pooling -> Pooling all token embedding vectors of sentence.
+    pooling_model = models.Pooling(
+        embedding_model.get_word_embedding_dimension(),
+        pooling_mode_mean_tokens=True,
+        pooling_mode_cls_token=False,
+        pooling_mode_max_tokens=False,
+    )
+
+    eval_model = SentenceTransformer(modules=[embedding_model, pooling_model])
+
+    eval_model.load_state_dict(torch.load('./cache_data/RDASS.pt'))
+    ################
+
+
+
     def compute_metrics(eval_preds):
-        preds, labels = eval_preds
+        preds, labels, inputs = eval_preds
+
         if isinstance(preds, tuple):
             preds = preds[0]
+
         # prediction tokenizer로 decoding해서 문장으로 바꿈
         decoded_preds = tokenizer.batch_decode(preds, skip_special_tokens=True)
+
         # labels에서 -100으로 된 padding 제외
         if data_args.ignore_pad_token_for_loss:
             # Replace -100 in the labels as we can't decode them.
             labels = np.where(labels != -100, labels, tokenizer.pad_token_id)
         decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
+        decoded_inputs = tokenizer.batch_decode(inputs, skip_special_tokens=True)
+
+        data1 = eval_model.encode(decoded_labels)
+        data2 = eval_model.encode(decoded_preds)
+        data3 = eval_model.encode(decoded_inputs)
+
+        answer_list = []
+        for s1, s2, s3 in zip(data1, data2, data3):
+            cos_scores1 = util.pytorch_cos_sim(s3, s1)
+            cos_scores2 = util.pytorch_cos_sim(s3, s2)
+
+            answer_list.append((cos_scores1[0] + cos_scores2[0])/2)
 
         # Some simple post-processing
         decoded_preds, decoded_labels = postprocess_text(decoded_preds, decoded_labels)
@@ -117,6 +167,7 @@ def main():
         prediction_lens = [np.count_nonzero(pred != tokenizer.pad_token_id) for pred in preds]
         result["gen_len"] = np.mean(prediction_lens)
         result = {k: round(v, 4) for k, v in result.items()}
+        result['NDASS'] = sum(answer_list)/len(answer_list)
         return result
 
     # Data collator
@@ -127,8 +178,8 @@ def main():
         pad_to_multiple_of=8 if training_args.fp16 else None,
     )
 
-    print(len(train_dataset))
-    wandb.init(project="project", entity="violetto", name= 'delete')
+    wandb.init(project="project", entity="violetto", name= 'NDASS')
+
     # Initialize our Trainer
     trainer = Seq2SeqTrainer(
         model=model,

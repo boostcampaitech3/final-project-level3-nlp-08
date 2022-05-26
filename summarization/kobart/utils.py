@@ -1,7 +1,8 @@
 import logging
 import os
+import datasets.arrow_dataset as da
 
-from transformers import BartForConditionalGeneration
+from transformers import BartForConditionalGeneration, AutoConfig
 from transformers.trainer_utils import get_last_checkpoint
 
 from arguments import ModelArguments, DataTrainingArguments
@@ -26,7 +27,8 @@ def return_checkpoint(logger:logging.Logger, training_args):
 
 def return_model_and_tokenizer(logger:logging.Logger, model_args:ModelArguments, data_args:DataTrainingArguments):
     tokenizer = PTTFwithSaveVocab.from_pretrained(model_args.model_name_or_path)
-    model = BartForConditionalGeneration.from_pretrained(model_args.model_name_or_path)
+    config = AutoConfig.from_pretrained(model_args.model_name_or_path)
+    model = BartForConditionalGeneration.from_pretrained(model_args.model_name_or_path, config=config)
 
     if model.config.decoder_start_token_id is None:
         raise ValueError("Make sure that `config.decoder_start_token_id` is correctly defined")
