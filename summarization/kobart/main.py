@@ -128,8 +128,6 @@ def main():
     eval_model.load_state_dict(torch.load('./cache_data/RDASS.pt'))
     ################
 
-
-
     def compute_metrics(eval_preds):
         preds, labels, inputs = eval_preds
 
@@ -146,16 +144,17 @@ def main():
         decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
         decoded_inputs = tokenizer.batch_decode(inputs, skip_special_tokens=True)
 
-        data1 = eval_model.encode(decoded_labels)
-        data2 = eval_model.encode(decoded_preds)
-        data3 = eval_model.encode(decoded_inputs)
+        data1 = eval_model.encode(decoded_labels) # Golden Summary
+        data2 = eval_model.encode(decoded_preds)  # Predcition
+        data3 = eval_model.encode(decoded_inputs) # Dialogue
 
         answer_list = []
         for s1, s2, s3 in zip(data1, data2, data3):
-            cos_scores1 = util.pytorch_cos_sim(s3, s1)
-            cos_scores2 = util.pytorch_cos_sim(s3, s2)
+            cos_scores = util.pytorch_cos_sim(s1, s2)
+            cos_scores1 = util.pytorch_cos_sim(s3, s1) # 점수 : Dialogue & Golden Summary
+            cos_scores2 = util.pytorch_cos_sim(s3, s2) # 점수 : Dialogue & Prediction
 
-            answer_list.append((cos_scores1[0] + cos_scores2[0])/2)
+            answer_list.append(cos_scores[0])
 
         # Some simple post-processing
         decoded_preds, decoded_labels = postprocess_text(decoded_preds, decoded_labels)
@@ -167,7 +166,7 @@ def main():
         prediction_lens = [np.count_nonzero(pred != tokenizer.pad_token_id) for pred in preds]
         result["gen_len"] = np.mean(prediction_lens)
         result = {k: round(v, 4) for k, v in result.items()}
-        result['NDASS'] = sum(answer_list)/len(answer_list)
+        result['RDASS'] = sum(answer_list)/len(answer_list)
         return result
 
     # Data collator

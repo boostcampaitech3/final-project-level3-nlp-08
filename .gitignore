@@ -1,3 +1,4 @@
 .idea/
 *.yaml
 summarization/kobart/data/
+summarization/kobart/cache_data/
