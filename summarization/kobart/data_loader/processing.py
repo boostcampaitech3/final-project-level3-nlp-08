@@ -36,3 +36,13 @@ def postprocess_text_first_sent(preds, labels):
     labels = ["\n".join(nltk.sent_tokenize(label)) for label in labels]
 
     return preds, labels
+
+
+def inference_preprocess_function(examples, tokenizer, max_source_length, max_target_length, padding):
+    inputs = examples['dialogue']
+
+    model_inputs = tokenizer(inputs, max_length=max_source_length, padding=padding, truncation=True)
+
+    batch = {k:v for k, v in model_inputs.items()}
+
+    return batch
