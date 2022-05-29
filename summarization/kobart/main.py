@@ -3,6 +3,7 @@ import wandb
 from datasets import load_metric
 from utils import return_checkpoint, return_model_and_tokenizer
 from sentence_transformers import SentenceTransformer,  LoggingHandler, losses, models, util
+from SBERT.sbert import *
 
 from transformers import (
     DataCollatorForSeq2Seq,
@@ -27,8 +28,6 @@ def main():
 
     # Setting Argument
     model_args, data_args, training_args = return_config()
-
-    training_args.include_inputs_for_metrics=True
 
     # Setting Seed
     set_seed(training_args.seed)
@@ -105,33 +104,32 @@ def main():
 
     metric = load_metric("rouge")
 
-    #### Cutting
-    pretrained_model_name = 'klue/roberta-base'
+    if os.path.exists('./cache_data/RDASS.pt'):
+        pretrained_model_name = 'klue/roberta-base'
 
-    # Load Embedding Model
-    embedding_model = models.Transformer(
-        model_name_or_path=pretrained_model_name,
-        max_seq_length=256,
-        do_lower_case=True
-    )
+        # Load Embedding Model
+        embedding_model = models.Transformer(
+            model_name_or_path=pretrained_model_name,
+            max_seq_length=256,
+            do_lower_case=True
+        )
 
-    # Only use Mean Pooling -> Pooling all token embedding vectors of sentence.
-    pooling_model = models.Pooling(
-        embedding_model.get_word_embedding_dimension(),
-        pooling_mode_mean_tokens=True,
-        pooling_mode_cls_token=False,
-        pooling_mode_max_tokens=False,
-    )
+        # Only use Mean Pooling -> Pooling all token embedding vectors of sentence.
+        pooling_model = models.Pooling(
+            embedding_model.get_word_embedding_dimension(),
+            pooling_mode_mean_tokens=True,
+            pooling_mode_cls_token=False,
+            pooling_mode_max_tokens=False,
+        )
 
-    eval_model = SentenceTransformer(modules=[embedding_model, pooling_model])
+        eval_model = SentenceTransformer(modules=[embedding_model, pooling_model])
 
-    eval_model.load_state_dict(torch.load('./cache_data/RDASS.pt'))
-    ################
-
-
+        eval_model.load_state_dict(torch.load('./cache_data/RDASS.pt'))
+    else:
+        eval_model = return_metric_model()
 
     def compute_metrics(eval_preds):
-        preds, labels, inputs = eval_preds
+        preds, labels = eval_preds
 
         if isinstance(preds, tuple):
             preds = preds[0]
@@ -144,18 +142,15 @@ def main():
             # Replace -100 in the labels as we can't decode them.
             labels = np.where(labels != -100, labels, tokenizer.pad_token_id)
         decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
-        decoded_inputs = tokenizer.batch_decode(inputs, skip_special_tokens=True)
 
-        data1 = eval_model.encode(decoded_labels)
-        data2 = eval_model.encode(decoded_preds)
-        data3 = eval_model.encode(decoded_inputs)
+        data1 = eval_model.encode(decoded_labels) # Golden Summary
+        data2 = eval_model.encode(decoded_preds)  # Predcition
 
         answer_list = []
-        for s1, s2, s3 in zip(data1, data2, data3):
-            cos_scores1 = util.pytorch_cos_sim(s3, s1)
-            cos_scores2 = util.pytorch_cos_sim(s3, s2)
+        for s1, s2 in zip(data1, data2):
+            cos_scores = util.pytorch_cos_sim(s1, s2)
 
-            answer_list.append((cos_scores1[0] + cos_scores2[0])/2)
+            answer_list.append(cos_scores[0])
 
         # Some simple post-processing
         decoded_preds, decoded_labels = postprocess_text(decoded_preds, decoded_labels)
@@ -167,7 +162,7 @@ def main():
         prediction_lens = [np.count_nonzero(pred != tokenizer.pad_token_id) for pred in preds]
         result["gen_len"] = np.mean(prediction_lens)
         result = {k: round(v, 4) for k, v in result.items()}
-        result['NDASS'] = sum(answer_list)/len(answer_list)
+        result['STS'] = sum(answer_list)/len(answer_list)
         return result
 
     # Data collator

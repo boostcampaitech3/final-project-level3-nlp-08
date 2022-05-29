@@ -20,7 +20,7 @@ def return_data(logger:logging.Logger):
         with open("./cache_data/raw_data.pickle", "wb") as f:
             pickle.dump(raw_datasets, f)
 
-    train_data_txt, validation_data_txt = raw_datasets.train_test_split(test_size=0.01).values()
+    train_data_txt, validation_data_txt = raw_datasets.train_test_split(test_size=0.1).values()
     return train_data_txt, validation_data_txt
 
 def flatten(example):
