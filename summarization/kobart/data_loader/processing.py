@@ -32,9 +32,6 @@ def postprocess_text_first_sent(preds, labels):
     preds = [pred[:pred.index(".")+1] if "." in pred else pred for pred in preds]
     labels = [label.strip() for label in labels]
 
-    preds = ["\n".join(nltk.sent_tokenize(pred)) for pred in preds]
-    labels = ["\n".join(nltk.sent_tokenize(label)) for label in labels]
-
     return preds, labels
 
 
