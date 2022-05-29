@@ -29,6 +29,19 @@ def return_eval_model_config():
     eval_args = EvalModelArguments(**eval_args)
     return eval_args
 
+def return_inference_config():
+    with open('./inference_configs.yaml') as f:
+        configs = yaml.load(f, Loader=yaml.FullLoader)
+
+    model_args = configs['ModelArguments']
+    data_args = configs['DataTrainingArguments']
+    gen_args = configs['GenerateArguments']
+
+    model_args = ModelArguments(**model_args)
+    data_args = DataTrainingArguments(**data_args)
+    gen_args = GenerateArguments(**gen_args)
+
+    return model_args, data_args, gen_args
 
 @dataclass
 class ModelArguments:
@@ -69,6 +82,7 @@ class ModelArguments:
             )
         },
     )
+
 
 @dataclass
 class DataTrainingArguments:
@@ -230,4 +244,22 @@ class EvalModelArguments:
     )
     epoch: str = field(
         metadata = {"help": "SBERT train EPOCH"}
+    )
+
+@dataclass
+class GenerateArguments:
+    num_beams: int = field(
+        metadata= {"help" : "Number of Beams"}
+    )
+
+    max_length: int = field(
+        metadata = {"help": "Generated Sentence Max Length"}
+    )
+
+    top_k: int=field(
+        metadata = {"help": "Token with probability ranking outside top_k are excluded from sampling"}
+    )
+
+    top_p: float = field(
+        metadata= {"help": "Create Only from a set of candidatees with {top_p * 100}% cummulative probabilities"}
     )
