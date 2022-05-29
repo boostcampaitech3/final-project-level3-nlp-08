@@ -1,6 +1,5 @@
 import logging
 import os
-import datasets.arrow_dataset as da
 
 from transformers import BartForConditionalGeneration, AutoConfig
 from transformers.trainer_utils import get_last_checkpoint
@@ -8,9 +7,10 @@ from transformers.trainer_utils import get_last_checkpoint
 from arguments import ModelArguments, DataTrainingArguments
 from model.tokenizer import PTTFwithSaveVocab
 
-
 def return_checkpoint(logger:logging.Logger, training_args):
-    if os.path.isdir(training_args.output_dir) and training_args.do_train and not training_args.overwrite_output_dir:
+    if os.path.isdir(training_args.output_dir) and training_args.do_train \
+            and not training_args.overwrite_output_dir:
+
         last_checkpoint = get_last_checkpoint(training_args.output_dir)
         if last_checkpoint is None and len(os.listdir(training_args.output_dir)) > 0:
             raise ValueError(
@@ -25,7 +25,10 @@ def return_checkpoint(logger:logging.Logger, training_args):
 
     return last_checkpoint
 
-def return_model_and_tokenizer(logger:logging.Logger, model_args:ModelArguments, data_args:DataTrainingArguments):
+def return_model_and_tokenizer(logger:logging.Logger,
+                               model_args:ModelArguments,
+                               data_args:DataTrainingArguments):
+
     tokenizer = PTTFwithSaveVocab.from_pretrained(model_args.model_name_or_path)
     config = AutoConfig.from_pretrained(model_args.model_name_or_path)
     model = BartForConditionalGeneration.from_pretrained(model_args.model_name_or_path, config=config)
