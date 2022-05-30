@@ -3,8 +3,6 @@ import numpy as np
 import pandas as pd
 from PIL import Image
 
-import torch
-import torchvision
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
@@ -23,18 +21,20 @@ from torch.utils.data import DataLoader
 import torchvision
 import torchvision.transforms as transforms
 import pytorch_lightning as pl
+from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from pytorch_lightning.callbacks import ModelCheckpoint, Callback
-from pytorch_lightning.loggers import TensorBoardLogger
+from pytorch_lightning.loggers import TensorBoardLogger, WandbLogger
 from pytorch_lightning.utilities.distributed import rank_zero_only
 
 # sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from dalle.models import ImageGPT
+from dalle.models import ImageGPT, Rep_Dalle
 
 seed = 42
 path_upstream = 'minDALL-E/1.3B'
-config_file = './configs/transfer-imagenet-uncond-gen.yaml'
+exp_name = 'exp2_ep4'
+config_file = './configs/'+exp_name+'.yaml'
 config_downstream = config_file
-result_path = './base_result'
+result_path = './'+exp_name
 data_dir = './img_data'
 n_gpus = 1
 
@@ -180,15 +180,15 @@ class CustomDataModule(pl.LightningDataModule):
     def train_dataloader(self):
         return DataLoader(self.trainset,
                           batch_size=self.train_batch_size,
-                          num_workers=0,
-                          # num_workers=self.num_workers,
+                          # num_workers=0,
+                          num_workers=self.num_workers,
                           pin_memory=True)
 
     def valid_dataloader(self):
         return DataLoader(self.validset,
                           batch_size=self.valid_batch_size,
-                          num_workers=0,
-                          # num_workers=self.num_workers,
+                          # num_workers=0,
+                          num_workers=self.num_workers,
                           pin_memory=True)
 def setup_callbacks(config, args_result_path):
     # Setup callbacks
@@ -208,6 +208,7 @@ def setup_callbacks(config, args_result_path):
         save_last=True
     )
     logger = TensorBoardLogger(log_path, name="iGPT")
+    # logger = WandbLogger(name='minDALL-E_ep3',project='final',save_dir=log_path, name="iGPT")
     logger_img = ImageLogger()
     return checkpoint_callback, logger, logger_img
 
@@ -274,7 +275,7 @@ def main():
     pl.seed_everything(seed)
 
     # Build iGPT
-    model, config = ImageGPT.from_pretrained(path_upstream, config_downstream)
+    model, config = Rep_Dalle.from_pretrained(path_upstream, config_downstream)
 
     # Setup callbacks
     ckpt_callback, logger, logger_img = setup_callbacks(config, result_path)
@@ -296,16 +297,24 @@ def main():
     grad_accm_steps = config.experiment.total_batch_size // (config.experiment.local_batch_size * n_gpus)
     config.optimizer.max_steps = len(dataset.trainset) // config.experiment.total_batch_size * config.experiment.epochs
 
+    early_stop_callback = EarlyStopping(
+        monitor='val/loss',
+        min_delta=0.00,
+        patience=3,
+        verbose=True,
+        mode='min'
+    )
     # Build trainer
     trainer = pl.Trainer(max_epochs=config.experiment.epochs,
                          accumulate_grad_batches=grad_accm_steps,
                          gradient_clip_val=config.optimizer.grad_clip_norm,
                          precision=16 if config.experiment.use_amp else 32,
-                         callbacks=[ckpt_callback, logger_img],
+                         callbacks=[ckpt_callback, logger_img,early_stop_callback],
                          accelerator="gpu",
                          devices=n_gpus,
                          # strategy="ddp",
-                         logger=logger)
+                         logger=logger,
+                         )
     trainer.fit(model, train_dataloader, valid_dataloader)
 
 if __name__ == '__main__':
