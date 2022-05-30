@@ -29,6 +29,19 @@ def return_eval_model_config():
     eval_args = EvalModelArguments(**eval_args)
     return eval_args
 
+def return_inference_config():
+    with open('./inference_configs.yaml') as f:
+        configs = yaml.load(f, Loader=yaml.FullLoader)
+
+    model_args = configs['ModelArguments']
+    data_args = configs['DataTrainingArguments']
+    gen_args = configs['GenerateArguments']
+
+    model_args = ModelArguments(**model_args)
+    data_args = DataTrainingArguments(**data_args)
+    gen_args = GenerateArguments(**gen_args)
+
+    return model_args, data_args, gen_args
 
 @dataclass
 class ModelArguments:
@@ -69,6 +82,7 @@ class ModelArguments:
             )
         },
     )
+
 
 @dataclass
 class DataTrainingArguments:
@@ -186,19 +200,15 @@ class DataTrainingArguments:
             )
         },
     )
+    ignore_pad_token_for_loss: Optional[bool] = field(
+        default=True,
+        metadata={
+            "help": (
+                "If you setting True, then Setting ignore_pad_token ID"
+            )
+        },
+    )
 
-    def __post_init__(self):
-        if self.dataset_name is None and self.train_file is None and self.validation_file is None:
-            raise ValueError("Need either a dataset name or a training/validation file.")
-        else:
-            if self.train_file is not None:
-                extension = self.train_file.split(".")[-1]
-                assert extension in ["csv", "json"], "`train_file` should be a csv or a json file."
-            if self.validation_file is not None:
-                extension = self.validation_file.split(".")[-1]
-                assert extension in ["csv", "json"], "`validation_file` should be a csv or a json file."
-        if self.val_max_target_length is None:
-            self.val_max_target_length = self.max_target_length
 
 @dataclass
 class WandbArguments:
@@ -212,6 +222,7 @@ class WandbArguments:
         metadata={"help" : "Train_Name"}
     )
 
+@dataclass
 class EvalModelArguments:
     eval_model_path: str = field(
         metadata={"help": "Path to pretrained SBERT Model"}
@@ -230,4 +241,22 @@ class EvalModelArguments:
     )
     epoch: str = field(
         metadata = {"help": "SBERT train EPOCH"}
+    )
+
+@dataclass
+class GenerateArguments:
+    num_beams: int = field(
+        metadata= {"help" : "Number of Beams"}
+    )
+
+    max_length: int = field(
+        metadata = {"help": "Generated Sentence Max Length"}
+    )
+
+    top_k: int=field(
+        metadata = {"help": "Token with probability ranking outside top_k are excluded from sampling"}
+    )
+
+    top_p: float = field(
+        metadata= {"help": "Create Only from a set of candidatees with {top_p * 100}% cummulative probabilities"}
     )

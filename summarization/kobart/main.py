@@ -35,7 +35,7 @@ def main():
         last_checkpoint = None
 
     # Bring Dataset
-    train_data_txt, validation_data_txt = return_data(logger=logger)
+    train_data_txt, validation_data_txt = return_data(logger=logger, data_args=data_args)
 
     # Bring Tokenizer & Model
     tokenizer, model = return_model_and_tokenizer(logger=logger, model_args=model_args, data_args=data_args)
