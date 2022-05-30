@@ -1,9 +1,8 @@
 import torch
 import pytorch_lightning as pl
-
+from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 # sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from dalle.models import ImageGPT
-
+from dalle.models import Rep_Dalle
 from data_loader.dataset import CustomDataModule
 from data_loader.dataloader import CustomDataLoader
 from data_loader.utils import mk_dataframe, data_setting, check_unopen_img, rm_unopen_img
@@ -38,7 +37,7 @@ def main():
     pl.seed_everything(seed)
 
     # Build iGPT
-    model, config = ImageGPT.from_pretrained(path_upstream, config_downstream)
+    model, config = Rep_Dalle.from_pretrained(path_upstream, config_downstream)
     
     # Add config for setup callbacks & data modules
     config.data_trainsforms = data_transforms
@@ -75,12 +74,21 @@ def main():
     grad_accm_steps = config.experiment.total_batch_size // (config.experiment.local_batch_size * n_gpus)
     config.optimizer.max_steps = len(dataset.trainset) // config.experiment.total_batch_size * config.experiment.epochs
 
+    # Setting EarlyStopping
+    early_stop_callback = EarlyStopping(
+        monitor='val/loss',
+        min_delta=0.00,
+        patience=3,
+        verbose=True,
+        mode='min'
+    )
+
     # Build trainer
     trainer = pl.Trainer(max_epochs=config.experiment.epochs,
                          accumulate_grad_batches=grad_accm_steps,
                          gradient_clip_val=config.optimizer.grad_clip_norm,
                          precision=16 if config.experiment.use_amp else 32,
-                         callbacks=[ckpt_callback, logger_img],
+                         callbacks=[ckpt_callback, logger_img, early_stop_callback],
                          accelerator="gpu",
                          devices=n_gpus,
                          # strategy="ddp",

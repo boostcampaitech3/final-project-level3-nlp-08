@@ -1,3 +1,4 @@
+from typing import List
 import urllib.request
 import json
 
@@ -27,7 +28,8 @@ def mt(sentence, client_id, client_secret):
     else:
         print("Error Code:" + rescode)
 
-def process_answers(output_list):
-    with open("sentences.txt", "w") as f:
-        for output in output_list:
-            f.write(output[0], "\n")
+def cleanList(sentences:List):
+    answers = []
+    for sentence in sentences:
+        answers.append(sentence[0])
+    return answers
