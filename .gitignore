@@ -1,0 +1,7 @@
+.idea/
+*.yaml
+summarization/kobart/data/
+summarization/kobart/cache_data/
+*.json
+.DS_Store
+
