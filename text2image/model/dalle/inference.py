@@ -3,14 +3,13 @@
 # Copyright (c) 2021 Kakao Brain Corp. All Rights Reserved.
 # Licensed under the Apache License, Version 2.0 [see LICENSE for details]
 # ------------------------------------------------------------------------------------
-from translate import client, cleanList, mt
+from translate import client, cleanList, ko2en
 import os
 import sys
 import argparse
 import clip
 import numpy as np
 from PIL import Image
-from translate import client, mt
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from dalle.models import Dalle, Rep_Dalle
@@ -59,7 +58,7 @@ client_id, client_secret = client(args.client)
 # check if str or file path
 if args.input_type == "str":
     # Sampling
-    enText = mt(args.prompt, client_id, client_secret)
+    enText = ko2en(args.prompt, args.client)
     images = model.sampling(prompt=enText,
                             top_k=args.top_k,
                             top_p=args.top_p,
@@ -99,7 +98,7 @@ else:
     else:
         sentences = cleanList(args.prompt)  # summarization 모델의 output을 변형없이 그대로 가져올 때
     for idx, sentence in enumerate(sentences):
-        enText = mt(sentence, client_id, client_secret)
+        enText = ko2en(sentence, args.client)
 
         # Sampling
         images = model.sampling(prompt=enText,
