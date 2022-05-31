@@ -80,6 +80,7 @@ if args.input_type == "str":
     # Print scores and save files
     print(f"원문:", args.prompt)
     print(f"번역문:", enText)
+    scores = sorted(scores, reverse=True)
     for i, score in enumerate(scores):
         print(i+1,"clip score:", score.item())
 
@@ -122,6 +123,7 @@ else:
         print(f"{idx} 번째 문장:")
         print("원문:", sentence)
         print("번역문:", enText)
+        scores = sorted(scores, reverse=True)
         for i, score in enumerate(scores):
             print(i+1,"clip score:", score.item())
 
