@@ -1,16 +1,14 @@
 from logger.logger import *
 from datasets import load_dataset
-from transformers import (
-    set_seed,
-)
+from transformers import set_seed
 
 from arguments import *
 from utils import return_model_and_tokenizer
 from data_loader.processing import *
 
-def generate_summary(test_samples, model, tokenizer, data_args:DataTrainingArguments, gen_args:GenerateArguments):
+def generate_summary(inputs, model, tokenizer, data_args:DataTrainingArguments, gen_args:GenerateArguments):
     inputs = tokenizer(
-        test_samples["dialogue"],
+        inputs["dialogue"],
         padding="max_length",
         truncation=True,
         max_length=data_args.max_source_length,
@@ -41,31 +39,18 @@ def main():
     # Return Tokenizer and Model
     tokenizer, model = return_model_and_tokenizer(logger, model_args=model_args, data_args=data_args)
 
-    # Load Data
+    # Load Data in json
     raw_dataset = load_dataset(
-        data_args.data_file_type,
+        'json',
         data_files = {'test': data_args.test_file},
         field='data'
     )
     predict_dataset = raw_dataset['test']
 
-    padding = "max_length" if data_args.pad_to_max_length else False
-    predict_dataset = predict_dataset.map(
-            lambda example: inference_preprocess_function(examples=example,
-                                                tokenizer=tokenizer,
-                                                max_source_length=data_args.max_source_length,
-                                                max_target_length=data_args.max_target_length,
-                                                padding=padding),
-            batched=True,
-            num_proc=data_args.preprocessing_num_workers,
-            remove_columns=predict_dataset.column_names
-        )
-
-
     predictions = generate_summary(predict_dataset, model, tokenizer, data_args, gen_args)
-
     predictions = postprocess_text_first_sent(predictions)
 
+    # 해당 부분 아래는 Text2Image 코드 실행되어야함
     print(predictions)
 
 if __name__ == "__main__":
