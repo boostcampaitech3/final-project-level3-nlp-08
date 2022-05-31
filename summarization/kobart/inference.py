@@ -1,6 +1,7 @@
 from logger.logger import *
 from datasets import load_dataset
 from transformers import set_seed
+import torch
 
 from arguments import *
 from utils import return_model_and_tokenizer
@@ -30,6 +31,7 @@ def generate_summary(inputs, model, tokenizer, data_args:DataTrainingArguments, 
     return output_str
 
 def main():
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     logger = get_logger('Prediction')
 
     model_args, data_args, gen_args = return_inference_config()
@@ -38,6 +40,7 @@ def main():
     
     # Return Tokenizer and Model
     tokenizer, model = return_model_and_tokenizer(logger, model_args=model_args, data_args=data_args)
+    model = model.to(device)
 
     # Load Data in json
     raw_dataset = load_dataset(
