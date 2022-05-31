@@ -27,19 +27,8 @@ def postprocess_text(preds, labels):
 
     return preds, labels
 
-def postprocess_text_first_sent(preds, labels):
+def postprocess_text_first_sent(preds):
     preds = [pred.strip() for pred in preds]
     preds = [pred[:pred.index(".")+1] if "." in pred else pred for pred in preds]
-    labels = [label.strip() for label in labels]
 
-    return preds, labels
-
-
-def inference_preprocess_function(examples, tokenizer, max_source_length, max_target_length, padding):
-    inputs = examples['dialogue']
-
-    model_inputs = tokenizer(inputs, max_length=max_source_length, padding=padding, truncation=True)
-
-    batch = {k:v for k, v in model_inputs.items()}
-
-    return batch
+    return preds
