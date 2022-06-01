@@ -28,3 +28,6 @@ test.*/
 
 # MacOSX
 **/*.DS_Store
+
+# naver papago api
+**/client.json

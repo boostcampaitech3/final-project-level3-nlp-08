@@ -1,77 +1,59 @@
-import torch
-from datasets import load_dataset
-from transformers import (
-    BartForConditionalGeneration,
-    DataCollatorForSeq2Seq,
-    set_seed,
-    BartForConditionalGeneration,
-    Seq2SeqTrainingArguments
-)
-from sentence_transformers import SentenceTransformer, models, util
-
 from logger.logger import *
+from datasets import load_dataset
+from transformers import set_seed
+import torch
 
 from arguments import *
 from utils import return_model_and_tokenizer
 from data_loader.processing import *
 
-import yaml
+def generate_summary(inputs, model, tokenizer, data_args:DataTrainingArguments, gen_args:GenerateArguments):
+    inputs = tokenizer(
+        inputs["dialogue"],
+        padding="max_length",
+        truncation=True,
+        max_length=data_args.max_source_length,
+        return_tensors="pt",
+    )
+
+    input_ids = inputs.input_ids.to(model.device)
+    attention_mask = inputs.attention_mask.to(model.device)
+    outputs = model.generate(input_ids,
+                             num_beams=gen_args.num_beams,
+                             max_length=gen_args.max_length,
+                             attention_mask=attention_mask,
+                             top_k=gen_args.top_k,
+                             top_p=gen_args.top_p,
+                             )
+
+    output_str = tokenizer.batch_decode(outputs, skip_special_tokens=True)
+
+    return output_str
 
 def main():
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     logger = get_logger('Prediction')
 
-    with open('./inference_configs.yaml') as f:
-        configs = yaml.load(f, Loader=yaml.FullLoader)
-    model_args = configs['ModelArguments']
-    data_args = configs['DataTrainingArguments']
-
-    model_args = ModelArguments(**model_args)
-    data_args = DataTrainingArguments(**data_args)
-    
+    model_args, data_args, gen_args = return_inference_config()
 
     set_seed(42)
     
     # Return Tokenizer and Model
-    tokenizer, model = return_model_and_tokenizer(logger=logger, model_args=model_args, data_args=data_args)
+    tokenizer, model = return_model_and_tokenizer(logger, model_args=model_args, data_args=data_args)
+    model = model.to(device)
 
-    # Load Data
+    # Load Data in json
     raw_dataset = load_dataset(
-        data_args.data_file_type,
+        'json',
         data_files = {'test': data_args.test_file},
         field='data'
     )
     predict_dataset = raw_dataset['test']
 
-    padding = "max_length" if data_args.pad_to_max_length else False
-    predict_dataset = predict_dataset.map(
-            lambda example: inference_preprocess_function(examples=example,
-                                                tokenizer=tokenizer,
-                                                max_source_length=data_args.max_source_length,
-                                                max_target_length=data_args.max_target_length,
-                                                padding=padding),
-            batched=True,
-            num_proc=data_args.preprocessing_num_workers,
-            remove_columns=predict_dataset.column_names
-        )
+    predictions = generate_summary(predict_dataset, model, tokenizer, data_args, gen_args)
+    predictions = postprocess_text_first_sent(predictions)
 
-    # Make predictions
-    # predict_dataset 현재 batch 안된 상태
-    # Data 입력받는 방식에 따라 입력하는 데이터 형태 변경해야할 예정
-    # 현재 데이터는 validation set의 초반 16개만 입력받음
-    # 안잘라주면 OOM 문제 발생
-    # 입력 방식 확정되면 수정 필요
-    output = model.generate(
-        inputs = torch.tensor(predict_dataset["input_ids"][:16]),
-        attention_mask = torch.tensor(predict_dataset["attention_mask"][:16]),
-        top_k=50,
-        top_p=0.95,
-        max_length = 64
-    )
-    predictions = tokenizer.batch_decode(
-                    output, skip_special_tokens=True, clean_up_tokenization_spaces=True
-                )
-    
-    predictions = [pr[:pr.index('.')+1] if '.' in pr else pr for pr in predictions]
+    # 해당 부분 아래는 Text2Image 코드 실행되어야함
     print(predictions)
 
 if __name__ == "__main__":

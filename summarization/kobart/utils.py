@@ -60,4 +60,3 @@ def return_model_and_tokenizer(logger:logging.Logger,
                 )
 
     return tokenizer, model
-
