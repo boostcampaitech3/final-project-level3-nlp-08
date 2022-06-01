@@ -10,3 +10,4 @@ wandb
 *.txt
 *.tsv
 *.pt
+*.json
