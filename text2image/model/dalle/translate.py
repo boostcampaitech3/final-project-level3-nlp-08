@@ -4,7 +4,7 @@ import json
 
 import nltk
 from nltk.tokenize import word_tokenize
-# from nltk.tag import pos_tag
+from nltk.tag import pos_tag
 from nltk.corpus import stopwords
 # nltk.download('stopwords')
 # nltk.download('averaged_perceptron_tagger')
@@ -48,6 +48,17 @@ def ko2en(sentence, client_id, client_secret):
 
 ################ 전처리 ################
 
+def tokNJR(sentence):
+            tokenized = []
+            sentence = word_tokenize(sentence)
+            tags = pos_tag(sentence)
+            for (word, tag) in tags:
+                if tag[0]=='N' or tag[0]=='J' or tag[0]=='R':
+                    tokenized.append(word)
+
+            return tokenized
+
+
 def tokSTOP(sentence):
     sw = stopwords.words('english')
     sentence = word_tokenize(sentence.lower())
@@ -57,15 +68,18 @@ def tokSTOP(sentence):
 
 
 def transformText(text):
-    words = tokSTOP(text)
-    sentence = ", ".join(words)
-    return sentence
+
+    sentences = []
+    sentences.append(", ".join(tokSTOP(text)))
+    sentences.append(", ".join(tokNJR(text)))
+    return sentences
 
 
 def preprocess(sentence):
     prefix = "A painting of "
-    text = transformText(sentence)
-    answer = prefix + text
+    answer = []
+    for sentence in transformText(sentence):
+        answer.append(prefix + sentence)
     
     return answer
 
