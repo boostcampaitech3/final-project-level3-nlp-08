@@ -28,9 +28,9 @@ import nltk
 from nltk.tokenize import word_tokenize
 from nltk.tag import pos_tag
 from nltk.corpus import stopwords
-# nltk.download('stopwords')
-# nltk.download('averaged_perceptron_tagger')
-# nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('averaged_perceptron_tagger')
+nltk.download('punkt')
 # !necessary : papago api client 정보를 저장한 json file 과 해당 file path
 
 from text2image.model.dalle.utils.utils import set_seed, clip_score
@@ -113,6 +113,7 @@ def mt(sentence, client_id, client_secret):
 
 ################ 전처리 ################
 
+
 def tokNVJR(sentence):
     tokenized = []
     sentence = word_tokenize(sentence)
@@ -143,6 +144,7 @@ def transformText(text):
 def preprocess(sentence):
     prefix = "A painting of "
     answer = []
+    print(transformText(sentence))
     for sentence in transformText(sentence):
         answer.append(prefix + sentence)
     
@@ -217,5 +219,5 @@ async def upload_image(item: Item):
     stop_img = txt2img(result[0])
     # NVJR_imgs = txt2img(result[1])
 
-    return {"image_array":stop_img}
-    # return {"summary": result}
+
+    return {"summary": result, "kor_sum":kor_sum[0]}
