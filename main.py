@@ -16,7 +16,7 @@ from pydantic import BaseModel
 
 # from googletrans import Translator
 from text2image.model.dalle.models import Rep_Dalle
-
+from text2image.model.dalle.models import Dalle
 from transformers import BartForConditionalGeneration, AutoTokenizer
 
 # import googletrans
@@ -45,7 +45,7 @@ tokenizer = AutoTokenizer.from_pretrained('chi0/kobart-dial-sum')
 
 ########### txt2img ###########
 global txt2imgModel
-txt2imgModel = Rep_Dalle.from_pretrained("./text2image/model/exp2_ep4/exp2_ep4/29052022_082436")
+txt2imgModel = Dalle.from_pretrained('minDALL-E/1.3B')
 ########### txt2img ###########
 
 app = FastAPI()
