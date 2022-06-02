@@ -17,9 +17,9 @@ def return_data(logger:logging.Logger, data_args:DataTrainingArguments):
             raw_datasets = pickle.load(f)
 
     else:
-        sample_dataset = da.Dataset.from_pandas(get_raw_data(logger=logger))
-        raw_datasets = sample_dataset.map(flatten, remove_columns=['id'], batched = True)
-        # raw_datasets = sample_dataset.map(add_name, remove_columns=['id'], batched=True)
+        sample_dataset = da.Dataset.from_pandas(get_raw_data(logger=logger, data_args=data_args))
+        # raw_datasets = sample_dataset.map(flatten, remove_columns=['id'], batched = True)
+        raw_datasets = sample_dataset.map(add_name, remove_columns=['id'], batched=True)
 
         with open(data_args.saved_data_path, "wb") as f:
             pickle.dump(raw_datasets, f)
