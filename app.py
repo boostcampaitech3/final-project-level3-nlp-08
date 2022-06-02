@@ -35,22 +35,7 @@ def make_df(file_path):
     """
     txt파일을 dataframe으로 변환
     """
-<<<<<<< HEAD
-    with open(file_path, 'r', encoding='UTF-8') as input_file:
-        person = []
-        date = []
-        time = []
-        utterance = []
-        d = ''
-        for line in input_file:
-            if line.startswith('---------------'):
-                d = line.split(' ')
-                d = d[1][:-1] + '-' + format(int(d[2][:-1]), '02') + '-' + format(int(d[3][:-1]), '02')
-            elif line.startswith('['):
-                sp = line.split('] ')
-                if sp[0][1:] == '방장봇': # '삭제된 메시지입니다.'
-                    continue
-=======
+
     person = []
     date = []
     time = []
@@ -65,7 +50,6 @@ def make_df(file_path):
             sp = line.split('] ')
             if sp[0][1:] == '방장봇': # '삭제된 메시지입니다.'
                 continue
->>>>>>> 87e2cb16096651cabf6791e620aa64d44c3ab1ad
                 
             # context에 ']'가 있는 경우
             if len(sp) > 3:
