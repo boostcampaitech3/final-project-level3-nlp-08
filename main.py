@@ -140,7 +140,8 @@ def preprocess(sentence):
 
 ################ 번역 + 전처리 ################
 
-def ko2en(sentence, client):
+def ko2en(sentence):
+    global client
     client_id, client_secret = client["client_id"], client["client_secret"]
     sentence = mt(sentence, client_id, client_secret)
     sentences = preprocess(sentence)
