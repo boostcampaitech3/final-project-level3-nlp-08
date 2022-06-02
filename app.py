@@ -121,7 +121,7 @@ def get_attribute(df):
     
     return df, _utterance, _turn, _participant
 
-def get_last_dialog(df):
+def get_last_dialogue(df):
     """
     모든 대화들 중 최근시간대의 대화만 추출
     """
@@ -145,7 +145,7 @@ def get_last_dialog(df):
 def txt_to_json(upload_file):  # txt파일이 입력됨
     talk_df = make_df(upload_file)
     talk_df['utterance'] = talk_df['utterance'].transform(context_punc)
-    talk_df = get_last_dialog(talk_df)
+    talk_df = get_last_dialogue(talk_df)
     talk_df, utterance, turn, participant = get_attribute(talk_df)
     talk_df = talk_df[['utteranceID', 'turnID', 'participantID', 'date', 'time', 'utterance']]  # 열순서 바꾸기
     
@@ -181,38 +181,31 @@ def txt_to_json(upload_file):  # txt파일이 입력됨
             "participantID": "P01",
             "date": "2020-11-25",
             "time": "23:45:00",
-            "utterance": "~~"
+            "utterance": "abcd"
           }]}}
     final_json['data'] = tmp_json
     
-    dict_data = final_json['data'][0]['body']['dialogue']
+    return final_json
+
+def preprocess(js_file):
+    dialogue = js_file['data'][0]['body']['dialogue']
     
     return_string = ""
-    for string in dict_data:
-        # print(string)
+    for string in dialogue:
         return_string += string['participantID'] + ": " + string['utterance'] + "\r\n "
 
-    return return_string
-
-def preprocess(upload_file):
-    
-    dict_data = upload_file['data'][0]['body']['dialogue']
-    
-    return_string=""
-    for string in dict_data:
-        return_string += string['participantID'] + ": " + string['utterance'] + "\r\n"
-    
     return return_string
 
 def main():
     st.title("Golden summary & Show image")
     
-    uploaded_file = st.file_uploader("input your dialogue data", type=["txt"])
+    uploaded_file = st.file_uploader("Input your dialogue data", type=["txt"])
 
     if uploaded_file:
-        json_data = json.load(uploaded_file.name)
+        js = txt_to_json(upload_file.name)  # json
+        dialogue_data = preprocess(js) # str
 
-        data = {'dialogue':preprocess(json_data)}
+        data = {'dialogue':preprocess(dialogue_data)}
        
         a = requests.post('http://127.0.0.1:8000/upload', data = json.dumps(data))
     
