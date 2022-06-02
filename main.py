@@ -220,4 +220,4 @@ async def upload_image(item: Item):
     # NVJR_imgs = txt2img(result[1])
 
 
-    return {"summary": result, "kor_sum":kor_sum[0]}
+    return {"summary": result, "kor_sum":kor_sum[0], "image_array":stop_img}
