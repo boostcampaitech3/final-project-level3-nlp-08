@@ -27,9 +27,9 @@ import nltk
 from nltk.tokenize import word_tokenize
 from nltk.tag import pos_tag
 from nltk.corpus import stopwords
-# nltk.download('stopwords')
-# nltk.download('averaged_perceptron_tagger')
-# nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('averaged_perceptron_tagger')
+nltk.download('punkt')
 # !necessary : papago api client 정보를 저장한 json file 과 해당 file path
 
 
@@ -104,14 +104,15 @@ def mt(sentence, client_id, client_secret):
 ################ 전처리 ################
 
 def tokNJR(sentence):
-            tokenized = []
-            sentence = word_tokenize(sentence)
-            tags = pos_tag(sentence)
-            for (word, tag) in tags:
-                if tag[0]=='N' or tag[0]=='J' or tag[0]=='R':
-                    tokenized.append(word)
+    tokenized = []
+    sentence = word_tokenize(sentence)
+    tags = pos_tag(sentence)
+    print(tags)
+    for (word, tag) in tags:
+        if tag[0]=='N' or tag[0]=='J' or tag[0]=='R':
+            tokenized.append(word)
 
-            return tokenized
+    return tokenized
 
 
 def tokSTOP(sentence):
@@ -133,6 +134,7 @@ def transformText(text):
 def preprocess(sentence):
     prefix = "A painting of "
     answer = []
+    print(transformText(sentence))
     for sentence in transformText(sentence):
         answer.append(prefix + sentence)
     
@@ -157,4 +159,4 @@ async def upload_image(item: Item):
     
     result = ko2en(kor_sum[0])
 
-    return {"summary": result}
+    return {"summary": result, "kor_sum":kor_sum[0]}
