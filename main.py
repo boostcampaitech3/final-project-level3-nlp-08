@@ -14,12 +14,12 @@ import json
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-from googletrans import Translator
+# from googletrans import Translator
 from text2image.model.dalle.models import Rep_Dalle
 
 from transformers import BartForConditionalGeneration, AutoTokenizer
 
-import googletrans
+# import googletrans
 
 import urllib.request
 import json
@@ -28,9 +28,9 @@ import nltk
 from nltk.tokenize import word_tokenize
 from nltk.tag import pos_tag
 from nltk.corpus import stopwords
-nltk.download('stopwords')
-nltk.download('averaged_perceptron_tagger')
-nltk.download('punkt')
+# nltk.download('stopwords')
+# nltk.download('averaged_perceptron_tagger')
+# nltk.download('punkt')
 # !necessary : papago api client 정보를 저장한 json file 과 해당 file path
 
 from text2image.model.dalle.utils.utils import set_seed, clip_score
@@ -45,13 +45,13 @@ tokenizer = AutoTokenizer.from_pretrained('chi0/kobart-dial-sum')
 
 ########### txt2img ###########
 global txt2imgModel
-txt2imgModel = Rep_Dalle.from_pretrained("./text2image/model/dexp2_ep4/exp2_ep4/29052022_082436")
+txt2imgModel = Rep_Dalle.from_pretrained("./text2image/model/exp2_ep4/exp2_ep4/29052022_082436")
 ########### txt2img ###########
 
 app = FastAPI()
 
 global client
-with open("./client.json", "r") as file:
+with open("./text2image/model/dalle/client.json", "r") as file:
     client = json.load(file)
 
 
@@ -200,7 +200,7 @@ def txt2img(text):
         new_im.paste(i, (x_offset,0))
         x_offset += i.size[0]
 
-    return new_im
+    return np.array(new_im)
 
 ################ Text2Image ################
 
@@ -215,9 +215,5 @@ async def upload_image(item: Item):
     stop_img = txt2img(result[0])
     # NVJR_imgs = txt2img(result[1])
 
-
-    # image_bytes = stop_imgs.getvalue()
-    # image = Image.open(io.BytesIO(image_bytes))
-    image = Image.open(stop_img)
-    st.image(image, caption='Uploaded Image')
+    return {"image_array":stop_img}
     # return {"summary": result}

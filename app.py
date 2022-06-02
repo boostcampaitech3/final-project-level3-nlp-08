@@ -7,6 +7,7 @@ import requests
 import json
 
 from fastapi import FastAPI
+from PIL import Image
 
 # SETTING PAGE CONFIG TO WIDE MODE
 st.set_page_config(layout="wide")
@@ -208,9 +209,10 @@ def main():
 
         data = {'dialogue':preprocess(js)}
        
-        a = requests.post('http://127.0.0.1:8000/upload', data = json.dumps(data))
-    
-        st.write(a.json())
+        a = requests.post('http://101.101.208.118:30001/upload', data = json.dumps(data))
+        image = Image.fromarray(a.json()["image_array"])
+        st.image(image, caption='Uploaded Image')
+        # st.write(a.json()["image_array"])
 
 
 main()
