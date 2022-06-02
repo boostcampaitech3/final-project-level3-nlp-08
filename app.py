@@ -41,7 +41,7 @@ def make_df(file_path):
     time = []
     utterance = []
     d = ''
-    for l in input_file:
+    for l in file_path:
         line = l.decode()
         if line.startswith('---------------'):
             d = line.split(' ')
@@ -210,7 +210,7 @@ def main():
 
     print(uploaded_file)
     if uploaded_file:
-        js = txt_to_json(uploaded_file.name)  # json
+        js = txt_to_json(uploaded_file)  # json
 
         dialogue_data = preprocess(js) # str
 
