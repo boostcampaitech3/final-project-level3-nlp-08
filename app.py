@@ -7,6 +7,13 @@ import requests
 import json
 
 from fastapi import FastAPI
+from io import StringIO
+from datetime import datetime
+import pandas as pd
+import numpy as np
+import re
+import random
+import json
 
 # SETTING PAGE CONFIG TO WIDE MODE
 st.set_page_config(layout="wide")
@@ -28,6 +35,7 @@ def make_df(file_path):
     """
     txt파일을 dataframe으로 변환
     """
+<<<<<<< HEAD
     with open(file_path, 'r', encoding='UTF-8') as input_file:
         person = []
         date = []
@@ -42,31 +50,46 @@ def make_df(file_path):
                 sp = line.split('] ')
                 if sp[0][1:] == '방장봇': # '삭제된 메시지입니다.'
                     continue
+=======
+    person = []
+    date = []
+    time = []
+    utterance = []
+    d = ''
+    for l in input_file:
+        line = l.decode()
+        if line.startswith('---------------'):
+            d = line.split(' ')
+            d = d[1][:-1] + '-' + format(int(d[2][:-1]), '02') + '-' + format(int(d[3][:-1]), '02')
+        elif line.startswith('['):
+            sp = line.split('] ')
+            if sp[0][1:] == '방장봇': # '삭제된 메시지입니다.'
+                continue
+>>>>>>> 87e2cb16096651cabf6791e620aa64d44c3ab1ad
                 
-                # context에 ']'가 있는 경우
-                if len(sp) > 3:
-                    tmp = '] '.join(sp[2:]).strip()
-                    # 관계없는 키워드 제외시  이곳과 아래구문에 추가해주시면 됩니다.
-                    # if tmp == '삭제된 메시지입니다.' or '하트인증' in tmp or '/닉네임' in tmp or '/SCD란' in tmp or '친목다과회' in tmp or '토론방' in tmp or '디스코드' in tmp or '신문고' in tmp:
-                    if tmp == '삭제된 메시지입니다.' or tmp.startswith('/'):
-                        continue
-                    else:
-                        utterance.append(tmp)
+            # context에 ']'가 있는 경우
+            if len(sp) > 3:
+                tmp = '] '.join(sp[2:]).strip()
+                # 관계없는 키워드 제외시  이곳과 아래구문에 추가해주시면 됩니다.
+                if tmp == '삭제된 메시지입니다.' or tmp.startswith('/'):
+                    continue
                 else:
-                    tmp = sp[2].strip()
-                    # if tmp == '삭제된 메시지입니다.' or '하트인증' in tmp or '/닉네임' in tmp or '/SCD란' in tmp or '친목다과회' in tmp or '토론방' in tmp or '디스코드' in tmp or '신문고' in tmp:
-                    if tmp == '삭제된 메시지입니다.' or tmp.startswith('/'):
-                        continue
-                    else:
-                        utterance.append(tmp)
+                    utterance.append(tmp)
+            else:
+                tmp = sp[2].strip()
+            
+                if tmp == '삭제된 메시지입니다.' or tmp.startswith('/'):
+                    continue
+                else:
+                    utterance.append(tmp)
                     
                     
-                # person.append(remove_special(sp[0][1:]))
-                person.append(sp[0][1:])
-                date.append(d)
-                time.append(check_am_pm(sp[1][1:]))
-        df = pd.DataFrame({'person':person, 'date': date, 'time': time, 'utterance':utterance})
-        return df
+            # person.append(remove_special(sp[0][1:]))
+            person.append(sp[0][1:])
+            date.append(d)
+            time.append(check_am_pm(sp[1][1:]))
+    df = pd.DataFrame({'person':person, 'date': date, 'time': time, 'utterance':utterance})
+    return df
     
 def context_punc(c):
     """
@@ -192,7 +215,7 @@ def preprocess(js_file):
     
     return_string = ""
     for string in dialogue:
-        return_string += string['participantID'] + ": " + string['utterance'] + "\r\n "
+        return_string += string['participantID'] + ": " + string['utterance'] + " \r\n "
 
     return return_string
 
@@ -205,8 +228,10 @@ def main():
     if uploaded_file:
         js = txt_to_json(uploaded_file.name)  # json
 
-        data = {'dialogue':preprocess(dialogue_data)}
-       
+        dialogue_data = preprocess(js) # str
+
+        data = {'dialogue':dialogue_data}
+        
         a = requests.post('http://127.0.0.1:8000/upload', data = json.dumps(data))
     
         st.write(a.json())
