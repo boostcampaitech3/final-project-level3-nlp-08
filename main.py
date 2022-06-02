@@ -82,15 +82,6 @@ def generate_summary(dialogue:str):
 
 ################ 번역 ################
 
-def client(json_file):
-    with open(json_file, "r") as file:
-        client = json.load(file)
-
-    client_id = client["client_id"]
-    client_secret = client["client_secret"]
-
-    return client_id, client_secret
-
 
 def mt(sentence, client_id, client_secret):
     koText = urllib.parse.quote(sentence)
@@ -154,8 +145,8 @@ def preprocess(sentence):
 
 ################ 번역 + 전처리 ################
 
-def ko2en(sentence, json_file):
-    client_id, client_secret = client(json_file)
+def ko2en(sentence, client):
+    client_id, client_secret = client["client_id"], client["client_secret"]
     sentence = mt(sentence, client_id, client_secret)
     sentences = preprocess(sentence)
     return sentences
