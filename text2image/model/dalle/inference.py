@@ -18,7 +18,7 @@ from dalle.utils.utils import set_seed, clip_score
 
 parser = argparse.ArgumentParser()
 # 추가된 argument
-parser.add_argument('--usetf', type=bool, default=False) # transfer learned model 사용 여부 : 사용(default)
+parser.add_argument('--usetf', type=bool, default=True) # transfer learned model 사용 여부 : 사용(default)
 parser.add_argument('--model_dir', type=str, default="../exp2_ep4/exp2_ep4/29052022_082436") # transfer learned model 경로
 parser.add_argument('--client', type=int, default='./client.json') # papago api client 정보 저장된 json 위치 : 사전에 papago api발급 받아서 json파일로 정보 저장
 # 기존 argument
@@ -45,9 +45,6 @@ else:
     model = Dalle.from_pretrained('minDALL-E/1.3B')  # This will automatically download the pretrained model.
 
 model.to(device=device)
-
-# Get client id & secret
-client_id, client_secret = client(args.client)
 
 
 # Sampling
