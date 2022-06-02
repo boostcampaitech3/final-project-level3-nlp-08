@@ -3,21 +3,14 @@
 본 모델은 사전 학습된 [SKT-AI/KoBART](https://github.com/SKT-AI/KoBART#release) 모델을 [AI Hub 한국어 대화 요약 데이터셋](https://aihub.or.kr/aidata/30714)로 fine-tuning한 모델입니다. <br>
 Fine-tuning된 모델은 huggingface에 업로드 되어있습니다. [link](https://huggingface.co/chi0/kobart-dial-sum)
 
-<br>
-<br>
-
 ## Usage
 ```python
 from transformers import BartForConditionalGeneration
 model_name = 'chi0/kobart-dial-sum'
 model = BartForConditionalGeneration.from_pretrained(model_name)
 ```
-<br><br>
-
 
 ## Dataset (AI Hub 한국어 대화 요약)
-<br>
-
 ### Dataset 구조
 ```
 .
@@ -44,7 +37,6 @@ model = BartForConditionalGeneration.from_pretrained(model_name)
     │   └── utterance
     └── summary
 ```
-<br>
 
 ### Dataset Info
 
