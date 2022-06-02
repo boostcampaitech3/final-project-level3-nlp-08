@@ -71,10 +71,10 @@ model = BartForConditionalGeneration.from_pretrained(model_name)
 │   ├── ...
 │   ├── __init__.py
 │   └── tokenizer.py
+├── README.md
 ├── __init__.py
 ├── arguments.py
 ├── inference.py
-├── README.md
 ├── main.py
 └── utils.py
 ```
