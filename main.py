@@ -82,15 +82,6 @@ def generate_summary(dialogue:str):
 
 ################ 번역 ################
 
-def client(json_file):
-    with open(json_file, "r") as file:
-        client = json.load(file)
-
-    client_id = client["client_id"]
-    client_secret = client["client_secret"]
-
-    return client_id, client_secret
-
 
 def mt(sentence, client_id, client_secret):
     koText = urllib.parse.quote(sentence)
@@ -108,11 +99,6 @@ def mt(sentence, client_id, client_secret):
         return enText
     else:
         print("Error Code:" + rescode)
-
-
-def ko2en(sentence, client_id, client_secret):
-    sentence = preprocess(sentence)
-    return mt(sentence, client_id, client_secret)
 
 
 ################ 전처리 ################
@@ -154,8 +140,9 @@ def preprocess(sentence):
 
 ################ 번역 + 전처리 ################
 
-def ko2en(sentence, json_file):
-    client_id, client_secret = client(json_file)
+def ko2en(sentence):
+    global client
+    client_id, client_secret = client["client_id"], client["client_secret"]
     sentence = mt(sentence, client_id, client_secret)
     sentences = preprocess(sentence)
     return sentences
@@ -168,6 +155,6 @@ class Item(BaseModel):
 async def upload_image(item: Item):
     kor_sum = postprocess_text_first_sent(generate_summary(item.dialogue))
     
-    result = mt(kor_sum[0])
+    result = ko2en(kor_sum[0])
 
     return {"summary": result}

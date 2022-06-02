@@ -40,11 +40,6 @@ def mt(sentence, client_id, client_secret):
     else:
         print("Error Code:" + rescode)
 
-
-def ko2en(sentence, client_id, client_secret):
-    sentence = preprocess(sentence)
-    return mt(sentence, client_id, client_secret)
-
 ################ 전처리 ################
 
 def tokNJR(sentence):
