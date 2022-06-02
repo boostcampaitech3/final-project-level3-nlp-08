@@ -28,7 +28,7 @@ def make_df(file_path):
     """
     txt파일을 dataframe으로 변환
     """
-     with open(file_path, 'r', encoding='UTF-8') as input_file:
+    with open(file_path, 'r', encoding='UTF-8') as input_file:
         person = []
         date = []
         time = []
@@ -199,13 +199,14 @@ def preprocess(js_file):
 def main():
     st.title("Golden summary & Show image")
     
-    uploaded_file = st.file_uploader("Input your dialogue data", type=["txt"])
+    uploaded_file = st.file_uploader("Input your dialogue data", type=["json"])
 
     if uploaded_file:
-        js = txt_to_json(upload_file.name)  # json
-        dialogue_data = preprocess(js) # str
+        # js = txt_to_json(upload_file.name)  # json
+        js = json.load(uploaded_file)
+        # dialogue_data = preprocess(js) # str
 
-        data = {'dialogue':preprocess(dialogue_data)}
+        data = {'dialogue':preprocess(js)}
        
         a = requests.post('http://127.0.0.1:8000/upload', data = json.dumps(data))
     

@@ -15,6 +15,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 
 from googletrans import Translator
+from text2image.model.dalle.models import Rep_Dalle
 
 from transformers import BartForConditionalGeneration, AutoTokenizer
 
@@ -27,16 +28,25 @@ import nltk
 from nltk.tokenize import word_tokenize
 from nltk.tag import pos_tag
 from nltk.corpus import stopwords
-# nltk.download('stopwords')
-# nltk.download('averaged_perceptron_tagger')
-# nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('averaged_perceptron_tagger')
+nltk.download('punkt')
 # !necessary : papago api client 정보를 저장한 json file 과 해당 file path
 
+from text2image.model.dalle.utils.utils import set_seed, clip_score
+import clip
+from PIL import Image
+import numpy as np
 
 global model
 model = BartForConditionalGeneration.from_pretrained('chi0/kobart-dial-sum')
 global tokenizer
 tokenizer = AutoTokenizer.from_pretrained('chi0/kobart-dial-sum')
+
+########### txt2img ###########
+global txt2imgModel
+txt2imgModel = Rep_Dalle.from_pretrained("./text2image/model/dexp2_ep4/exp2_ep4/29052022_082436")
+########### txt2img ###########
 
 app = FastAPI()
 
@@ -147,6 +157,52 @@ def ko2en(sentence):
     sentences = preprocess(sentence)
     return sentences
 
+################ Text2Image ################
+
+def txt2img(text):
+    set_seed(42)
+    device = 'cuda:0'
+    txt2imgModel.to(device=device)
+
+    # Sampling : enTexts = [stopwords버전, tokNJR버전 문장 문장] ==> 문장 2개
+    images = txt2imgModel.sampling(prompt=text,
+                            top_k=256,
+                            top_p=None,
+                            softmax_temperature=1.0,
+                            num_candidates=3,
+                            device=device).cpu().numpy()
+    images = np.transpose(images, (0, 2, 3, 1))
+
+    # CLIP Re-ranking
+    model_clip, preprocess_clip = clip.load("ViT-B/32", device=device)
+    model_clip.to(device=device)
+    ranks, scores = clip_score(prompt=text,
+                    images=images,
+                    model_clip=model_clip,
+                    preprocess_clip=preprocess_clip,
+                    device=device)
+
+    # Save images
+    images = images[ranks]
+    im = []
+    for i in range(3):
+        im.append(Image.fromarray((images[i]*255).astype(np.uint8)))
+
+    widths, heights = zip(*(i.size for i in im))
+
+    total_width = sum(widths)
+    max_height = max(heights)
+
+    new_im = Image.new('RGB', (total_width, max_height))
+
+    x_offset = 0
+    for i in im:
+        new_im.paste(i, (x_offset,0))
+        x_offset += i.size[0]
+
+    return new_im
+
+################ Text2Image ################
 
 class Item(BaseModel):
     dialogue: str
@@ -156,5 +212,12 @@ async def upload_image(item: Item):
     kor_sum = postprocess_text_first_sent(generate_summary(item.dialogue))
     
     result = ko2en(kor_sum[0])
+    stop_img = txt2img(result[0])
+    # NVJR_imgs = txt2img(result[1])
 
-    return {"summary": result}
+
+    # image_bytes = stop_imgs.getvalue()
+    # image = Image.open(io.BytesIO(image_bytes))
+    image = Image.open(stop_img)
+    st.image(image, caption='Uploaded Image')
+    # return {"summary": result}
