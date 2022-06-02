@@ -11,14 +11,10 @@ import json
 import urllib.request
 import json
 
-from fastapi import FastAPI
 from pydantic import BaseModel
-
-from googletrans import Translator
 
 from transformers import BartForConditionalGeneration, AutoTokenizer
 
-import googletrans
 
 global model
 model = BartForConditionalGeneration.from_pretrained('chi0/kobart-dial-sum')
