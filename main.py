@@ -46,7 +46,7 @@ def generate_summary(dialogue:str):
         dialogue,
         padding="max_length",
         truncation=True,
-        max_length=128,
+        max_length=512,
         return_tensors="pt",
     )
 
@@ -58,6 +58,8 @@ def generate_summary(dialogue:str):
                              attention_mask=attention_mask,
                              top_k=50,
                              top_p=0.95,
+                             no_repeat_ngram_size=3,
+                             temperature=0.7
                              )
 
     output_str = tokenizer.batch_decode(outputs, skip_special_tokens=True)
