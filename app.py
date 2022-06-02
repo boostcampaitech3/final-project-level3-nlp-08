@@ -35,12 +35,13 @@ def make_df(file_path):
     """
     txt파일을 dataframe으로 변환
     """
+
     person = []
     date = []
     time = []
     utterance = []
     d = ''
-    for l in input_file:
+    for l in file_path:
         line = l.decode()
         if line.startswith('---------------'):
             d = line.split(' ')
@@ -207,8 +208,10 @@ def main():
     
     uploaded_file = st.file_uploader("Input your dialogue data", type=["txt"])
 
+    print(uploaded_file)
     if uploaded_file:
-        js = txt_to_json(uploaded_file.name)  # json
+        js = txt_to_json(uploaded_file)  # json
+
         dialogue_data = preprocess(js) # str
 
         data = {'dialogue':dialogue_data}
