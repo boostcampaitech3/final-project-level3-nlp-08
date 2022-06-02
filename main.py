@@ -155,6 +155,6 @@ class Item(BaseModel):
 async def upload_image(item: Item):
     kor_sum = postprocess_text_first_sent(generate_summary(item.dialogue))
     
-    result = mt(kor_sum[0])
+    result = ko2en(kor_sum[0])
 
     return {"summary": result}
