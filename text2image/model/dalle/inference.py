@@ -95,8 +95,6 @@ else:
         sentences = None
         with open(args.prompt, "r") as f:
             sentences = f.realines()
-    else:
-        sentences = cleanList(args.prompt)  # summarization 모델의 output을 변형없이 그대로 가져올 때
     for idx, sentence in enumerate(sentences):
         enText = ko2en(sentence, args.client)
 
@@ -127,11 +125,14 @@ else:
             print(i+1,"clip score:", score.item())
 
         # Save images
-        txtname = args.dir.split(".")[1] # txt파일 이름
+        txtname = args.prompt.split(".")[0].split("/")[-1] # txt파일 이름
         images = images[ranks]
 
         if not os.path.exists('./figures'):
             os.makedirs('./figures')
+        dir_name = "./figures/"
+        if not os.path.exists('./figures'):
+            os.makedirs(f'./figures/{txtname}')
         for i in range(min(16, args.num_candidates)):
             im = Image.fromarray((images[i]*255).astype(np.uint8))
             im.save(f'./figures/{txtname}/{idx}_{i}.png') # figures/txt_파일_이름/idx_i.png (txt파일 내 idx번째 문장 i위 이미지)
