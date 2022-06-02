@@ -47,36 +47,38 @@ else:
 model.to(device=device)
 
 
-# Sampling
-enText = ko2en(args.prompt, args.client)
-images = model.sampling(prompt=enText,
-                        top_k=args.top_k,
-                        top_p=args.top_p,
-                        softmax_temperature=args.softmax_temperature,
-                        num_candidates=args.num_candidates,
-                        device=device).cpu().numpy()
-images = np.transpose(images, (0, 2, 3, 1))
+# Sampling : enTexts = [stopwords버전, tokNJR버전 문장 문장] ==> 문장 2개
+enTexts = ko2en(args.prompt, args.client)
 
-# CLIP Re-ranking
-model_clip, preprocess_clip = clip.load("ViT-B/32", device=device)
-model_clip.to(device=device)
-ranks, scores = clip_score(prompt=enText,
-                images=images,
-                model_clip=model_clip,
-                preprocess_clip=preprocess_clip,
-                device=device)
+for text in enTexts:
+    images = model.sampling(prompt=text,
+                            top_k=args.top_k,
+                            top_p=args.top_p,
+                            softmax_temperature=args.softmax_temperature,
+                            num_candidates=args.num_candidates,
+                            device=device).cpu().numpy()
+    images = np.transpose(images, (0, 2, 3, 1))
 
-# Print scores and save files
-print(f"원문:", args.prompt)
-print(f"번역문:", enText)
-scores = sorted(scores, reverse=True)
-for i, score in enumerate(scores):
-    print(i+1,"clip score:", score.item())
+    # CLIP Re-ranking
+    model_clip, preprocess_clip = clip.load("ViT-B/32", device=device)
+    model_clip.to(device=device)
+    ranks, scores = clip_score(prompt=text,
+                    images=images,
+                    model_clip=model_clip,
+                    preprocess_clip=preprocess_clip,
+                    device=device)
 
-# Save images
-images = images[ranks]
-if not os.path.exists('./figures'):
-    os.makedirs('./figures')
-for i in range(min(16, args.num_candidates)):
-    im = Image.fromarray((images[i]*255).astype(np.uint8))
-    im.save(f'./figures/{args.prompt}_{i}.png')
+    # Print scores and save files
+    print(f"원문:", args.prompt)
+    print(f"번역문:", text)
+    scores = sorted(scores, reverse=True)
+    for i, score in enumerate(scores):
+        print(i+1,"clip score:", score.item())
+
+    # Save images
+    images = images[ranks]
+    if not os.path.exists('./figures'):
+        os.makedirs('./figures')
+    for i in range(min(16, args.num_candidates)):
+        im = Image.fromarray((images[i]*255).astype(np.uint8))
+        im.save(f'./figures/{text}_{i}.png')
