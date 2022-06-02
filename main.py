@@ -103,13 +103,13 @@ def mt(sentence, client_id, client_secret):
 
 ################ 전처리 ################
 
-def tokNJR(sentence):
+
+def tokNVJR(sentence):
     tokenized = []
     sentence = word_tokenize(sentence)
     tags = pos_tag(sentence)
-    print(tags)
     for (word, tag) in tags:
-        if tag[0]=='N' or tag[0]=='J' or tag[0]=='R':
+        if tag[0]=='N' or tag[0]=='V' or tag[0]=='J' or tag[0]=='R':
             tokenized.append(word)
 
     return tokenized
@@ -127,7 +127,7 @@ def transformText(text):
 
     sentences = []
     sentences.append(", ".join(tokSTOP(text)))
-    sentences.append(", ".join(tokNJR(text)))
+    sentences.append(", ".join(tokNVJR(text)))
     return sentences
 
 
