@@ -3,14 +3,13 @@
 # Copyright (c) 2021 Kakao Brain Corp. All Rights Reserved.
 # Licensed under the Apache License, Version 2.0 [see LICENSE for details]
 # ------------------------------------------------------------------------------------
-from translate import client, cleanList, mt
+from translate import client, cleanList, ko2en
 import os
 import sys
 import argparse
 import clip
 import numpy as np
 from PIL import Image
-from translate import client, mt
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from dalle.models import Dalle, Rep_Dalle
@@ -20,21 +19,12 @@ from dalle.utils.utils import set_seed, clip_score
 parser = argparse.ArgumentParser()
 # 추가된 argument
 parser.add_argument('--usetf', type=bool, default=False) # transfer learned model 사용 여부 : 사용(default)
-<<<<<<< HEAD
 parser.add_argument('--model_dir', type=str, default="../exp2_ep4/exp2_ep4/29052022_082436") # transfer learned model 경로
 parser.add_argument('--client', type=int, default='./client.json') # papago api client 정보 저장된 json 위치 : 사전에 papago api발급 받아서 json파일로 정보 저장
 parser.add_argument('--input_type', type=str, default="str")       # input type이 txt(txt파일 경로)인지, list(summ모델의 output형태)인지, str인지
 # 기존 argument
 parser.add_argument('-n', '--num_candidates', type=int, default=3)
 parser.add_argument('--prompt', type=str, default='A painting of a tree on the ocean') # input sentence(str) / input list object/ input txt path
-=======
-parser.add_argument('--model_dir', type=str, default="'../exp2_ep4/exp2_ep4/29052022_082436'") # transfer learned model 경로
-parser.add_argument('--client', type=str, default='./client.json') # papago api client 정보 저장된 json 위치 : 사전에 papago api발급 받아서 json파일로 정보 저장
-parser.add_argument('--input_type', type=str, default="str")       # input type이 txt(txt파일 경로)인지, list(summ모델의 output형태)인지, str인지
-# 기존 argument
-parser.add_argument('-n', '--num_candidates', type=int, default=5)
-parser.add_argument('--prompt', type=str, default='나무의 사진') # input sentence(str) / input list object/ input txt path
->>>>>>> fd5b82b7a457f0078be9d8c1998056279b355485
 parser.add_argument('--softmax-temperature', type=float, default=1.0)
 parser.add_argument('--top_k', type=int, default=256)
 parser.add_argument('--top-p', type=float, default=None, help='0.0 <= top-p <= 1.0')
@@ -68,7 +58,7 @@ client_id, client_secret = client(args.client)
 # check if str or file path
 if args.input_type == "str":
     # Sampling
-    enText = mt(args.prompt, client_id, client_secret)
+    enText = ko2en(args.prompt, args.client)
     images = model.sampling(prompt=enText,
                             top_k=args.top_k,
                             top_p=args.top_p,
@@ -108,7 +98,7 @@ else:
     else:
         sentences = cleanList(args.prompt)  # summarization 모델의 output을 변형없이 그대로 가져올 때
     for idx, sentence in enumerate(sentences):
-        enText = mt(sentence, client_id, client_secret)
+        enText = ko2en(sentence, args.client)
 
         # Sampling
         images = model.sampling(prompt=enText,
