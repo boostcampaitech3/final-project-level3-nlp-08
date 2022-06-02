@@ -18,12 +18,14 @@ def generate_summary(inputs, model, tokenizer, data_args:DataTrainingArguments, 
 
     input_ids = inputs.input_ids.to(model.device)
     attention_mask = inputs.attention_mask.to(model.device)
-    outputs = model.generate(input_ids,
+    outputs = model.generate(input_ids[:16],
                              num_beams=gen_args.num_beams,
                              max_length=gen_args.max_length,
-                             attention_mask=attention_mask,
+                             attention_mask=attention_mask[:16],
                              top_k=gen_args.top_k,
                              top_p=gen_args.top_p,
+                             no_repeat_ngram_size=gen_args.no_repeat_ngram_size,
+                             temperature=gen_args.temperature,
                              )
 
     output_str = tokenizer.batch_decode(outputs, skip_special_tokens=True)
@@ -41,7 +43,6 @@ def main():
     # Return Tokenizer and Model
     tokenizer, model = return_model_and_tokenizer(logger, model_args=model_args, data_args=data_args)
     model = model.to(device)
-
     # Load Data in json
     raw_dataset = load_dataset(
         'json',

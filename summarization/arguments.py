@@ -260,3 +260,11 @@ class GenerateArguments:
     top_p: float = field(
         metadata= {"help": "Create Only from a set of candidatees with {top_p * 100}% cummulative probabilities"}
     )
+
+    no_repeat_ngram_size: float = field(
+        metadata= {"help": "If set to int > 0, all ngrams of that size can only occur once."}
+    )
+
+    temperature: float = field(
+        metadata= {"help": "The value used to module the next token probabilities."}
+    )
