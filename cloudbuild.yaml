@@ -1,0 +1,16 @@
+steps:
+  - name: 'gcr.io/just-sunrise-350705/boostcamp'
+    args:
+    - 'run'
+    - 'deploy'
+    - 'cloudrunservice'
+    - '--image'
+    - 'gcr.io/just-sunrise-350705/boostcamp'
+    - '--region'
+    - 'asia-northeast3'
+    - '--platform'
+    - 'managed'
+    - '--port'
+    - '8000'
+    - '--allow-unauthenticated'
+timeout: 3000s

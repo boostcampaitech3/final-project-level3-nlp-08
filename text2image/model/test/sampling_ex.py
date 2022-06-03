@@ -1,6 +1,5 @@
 # ------------------------------------------------------------------------------------
-# minDALL-E
-# Copyright (c) 2021 Kakao Brain Corp. All Rights Reserved.
+# Modified from minDALL-E (https://github.com/kakaobrain/minDALL-E)
 # Licensed under the Apache License, Version 2.0 [see LICENSE for details]
 # ------------------------------------------------------------------------------------
 
@@ -32,13 +31,9 @@ args = parser.parse_args()
 assert args.top_k <= 256, "It is recommended that top_k is set lower than 256."
 
 set_seed(args.seed)
-device = 'cuda:0'
-model,_ = Rep_Dalle.from_pretrained('../exp2_ep4/exp2_ep4/29052022_082436')  # This will automatically download the pretrained model.
-# model = torch.load('../model/pytorch_model.pth')
-# model,config = ImageGPT.from_pretrained("minDALL-E/1.3B",'../configs/exp1_ep4.yaml')
-# chck = torch.load("../exp2_ep4/exp2_ep4/29052022_082436/ckpt/last.ckpt")
-# model.load_state_dict(chck['state_dict'])
-# print(model)
+USE_CUDA = torch.cuda.is_available()
+device = torch.device('cuda:0' if USE_CUDA else 'cpu')
+model,_ = Rep_Dalle.from_pretrained('../tf_model/tf_model/29052022_082436')  # This will automatically download the pretrained model.
 model.to(device=device)
 
 # Sampling

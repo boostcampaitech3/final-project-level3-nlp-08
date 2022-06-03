@@ -2,6 +2,7 @@ from typing import Optional, List
 from fastapi import FastAPI, File, UploadFile
 import os
 import streamlit as st
+import subprocess
 
 import io
 import os
@@ -9,10 +10,9 @@ import yaml
 import json
 
 import urllib.request
-import json
 
-from fastapi import FastAPI
 from pydantic import BaseModel
+<<<<<<< HEAD
 
 # from googletrans import Translator
 from text2image.model.dalle.models import Rep_Dalle
@@ -20,6 +20,16 @@ from text2image.model.dalle.models import Dalle
 from transformers import BartForConditionalGeneration, AutoTokenizer
 
 # import googletrans
+=======
+from transformers import BartForConditionalGeneration, AutoTokenizer
+from text2image.model.dalle.models import Rep_Dalle
+from transformers import BartForConditionalGeneration, AutoTokenizer
+
+from text2image.model.dalle.utils.utils import set_seed, clip_score
+import clip
+from PIL import Image
+import numpy as np
+>>>>>>> 36262fb8a5764d2b40554d800131bb5346d54ea0
 
 import urllib.request
 import json
@@ -28,20 +38,26 @@ import nltk
 from nltk.tokenize import word_tokenize
 from nltk.tag import pos_tag
 from nltk.corpus import stopwords
-# nltk.download('stopwords')
-# nltk.download('averaged_perceptron_tagger')
-# nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('averaged_perceptron_tagger')
+nltk.download('punkt')
 # !necessary : papago api client 정보를 저장한 json file 과 해당 file path
 
+<<<<<<< HEAD
 from text2image.model.dalle.utils.utils import set_seed, clip_score
 import clip
 from PIL import Image
 import numpy as np
 
+=======
+# load model
+>>>>>>> 36262fb8a5764d2b40554d800131bb5346d54ea0
 global model
 model = BartForConditionalGeneration.from_pretrained('chi0/kobart-dial-sum')
 global tokenizer
 tokenizer = AutoTokenizer.from_pretrained('chi0/kobart-dial-sum')
+global txt2imgModel
+txt2imgModel,_ = Rep_Dalle.from_pretrained("text2image/model/tf_model/model/29052022_082436")
 
 ########### txt2img ###########
 global txt2imgModel
@@ -113,6 +129,7 @@ def mt(sentence, client_id, client_secret):
 
 ################ 전처리 ################
 
+
 def tokNVJR(sentence):
     tokenized = []
     sentence = word_tokenize(sentence)
@@ -143,6 +160,7 @@ def transformText(text):
 def preprocess(sentence):
     prefix = "A painting of "
     answer = []
+    print(transformText(sentence))
     for sentence in transformText(sentence):
         answer.append(prefix + sentence)
     
@@ -200,7 +218,13 @@ def txt2img(text):
         new_im.paste(i, (x_offset,0))
         x_offset += i.size[0]
 
+<<<<<<< HEAD
     return np.array(new_im)
+=======
+    new_im = np.array(new_im)
+    new_im = new_im.tolist()
+    return new_im
+>>>>>>> 36262fb8a5764d2b40554d800131bb5346d54ea0
 
 ################ Text2Image ################
 
@@ -210,10 +234,16 @@ class Item(BaseModel):
 @app.post('/upload')
 async def upload_image(item: Item):
     kor_sum = postprocess_text_first_sent(generate_summary(item.dialogue))
-    
+
     result = ko2en(kor_sum[0])
     stop_img = txt2img(result[0])
     # NVJR_imgs = txt2img(result[1])
+<<<<<<< HEAD
 
     return {"image_array":stop_img}
     # return {"summary": result}
+=======
+
+
+    return {"summary": result, "kor_sum":kor_sum[0], "image_array":stop_img}
+>>>>>>> 36262fb8a5764d2b40554d800131bb5346d54ea0
