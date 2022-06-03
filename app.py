@@ -33,6 +33,7 @@ def check_am_pm(string):
         hour += 12
     return format(hour, '02') + ':' + format(minute, '02') + ':' + '00'
 
+
 def make_df(file_path):
     """
     txt파일을 dataframe으로 변환
@@ -50,9 +51,9 @@ def make_df(file_path):
             d = d[1][:-1] + '-' + format(int(d[2][:-1]), '02') + '-' + format(int(d[3][:-1]), '02')
         elif line.startswith('['):
             sp = line.split('] ')
-            if sp[0][1:] == '방장봇': # '삭제된 메시지입니다.'
+            if sp[0][1:] == '방장봇':  # '삭제된 메시지입니다.'
                 continue
-                
+
             # context에 ']'가 있는 경우
             if len(sp) > 3:
                 tmp = '] '.join(sp[2:]).strip()
@@ -63,18 +64,17 @@ def make_df(file_path):
                     utterance.append(tmp)
             else:
                 tmp = sp[2].strip()
-            
+
                 if tmp == '삭제된 메시지입니다.' or tmp.startswith('/'):
                     continue
                 else:
                     utterance.append(tmp)
-                    
-                    
+
             # person.append(remove_special(sp[0][1:]))
             person.append(sp[0][1:])
             date.append(d)
             time.append(check_am_pm(sp[1][1:]))
-    df = pd.DataFrame({'person':person, 'date': date, 'time': time, 'utterance':utterance})
+    df = pd.DataFrame({'person': person, 'date': date, 'time': time, 'utterance': utterance})
     return df
     
 def context_punc(c):
@@ -151,32 +151,33 @@ def get_last_dialogue(df):
             pass
     return df[last_idx:].reset_index()
 
+
 def txt_to_json(upload_file):  # txt파일이 입력됨
     talk_df = make_df(upload_file)
     talk_df['utterance'] = talk_df['utterance'].transform(context_punc)
     talk_df = get_last_dialogue(talk_df)
     talk_df, utterance, turn, participant = get_attribute(talk_df)
     talk_df = talk_df[['utteranceID', 'turnID', 'participantID', 'date', 'time', 'utterance']]  # 열순서 바꾸기
-    
-    body = talk_df.to_json(orient = 'records', force_ascii=False)
+
+    body = talk_df.to_json(orient='records', force_ascii=False)
     body = json.loads(body)
-    
+
     total = {}
     total_body = {}
     dialogueInfo = {}
     dialogueInfo["numberOfParticipants"] = participant
     dialogueInfo["numberOfUtterances"] = utterance
     dialogueInfo["numberOfTurns"] = turn
-    
+
     # 추후 사용시 매개변수로 받게해서 사용할 예정
     # dialogueInfo["dialogueID"] = 'mbti'
     # dialogueInfo["type"] = "일상 대화"
     # dialogueInfo["topic"] = "개인 및 관계"
-    
+
     total['header'] = dialogueInfo
     total_body['dialogue'] = body
     total['body'] = total_body
-    
+
     final_json = {}
     tmp_json = {}
     final_json["numberOfItems"] = 1
@@ -184,16 +185,16 @@ def txt_to_json(upload_file):  # txt파일이 입력됨
     # 여러개 대화만들기 위한 더미데이터
     tmp_json[1] = {"body": {
         "dialogue": [
-          {
-            "utteranceID": "U1",
-            "turnID": "T1",
-            "participantID": "P01",
-            "date": "2020-11-25",
-            "time": "23:45:00",
-            "utterance": "abcd"
-          }]}}
+            {
+                "utteranceID": "U1",
+                "turnID": "T1",
+                "participantID": "P01",
+                "date": "2020-11-25",
+                "time": "23:45:00",
+                "utterance": "abcd"
+            }]}}
     final_json['data'] = tmp_json
-    
+
     return final_json
 
 def preprocess(js_file):
@@ -205,21 +206,21 @@ def preprocess(js_file):
 
     return return_string
 
+
 def main():
     st.title("Golden summary & Show image")
-    
+
     uploaded_file = st.file_uploader("Input your dialogue data", type=["txt"])
 
     print(uploaded_file)
     if uploaded_file:
-
         js = txt_to_json(uploaded_file)  # json
 
-        dialogue_data = preprocess(js) # str
+        dialogue_data = preprocess(js)  # str
 
-        data = {'dialogue':dialogue_data}
-        
-        a = requests.post('http://127.0.0.1:8000/upload', data = json.dumps(data))
+        data = {'dialogue': dialogue_data}
+
+        a = requests.post('http://127.0.0.1:8000/upload', data=json.dumps(data))
         image = a.json()["image_array"]
         image = np.array(image)
         image = Image.fromarray((image * 255).astype(np.uint8))

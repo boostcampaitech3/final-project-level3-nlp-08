@@ -2,6 +2,7 @@ from typing import Optional, List
 from fastapi import FastAPI, File, UploadFile
 import os
 import streamlit as st
+import subprocess
 
 import io
 import os
@@ -9,17 +10,16 @@ import yaml
 import json
 
 import urllib.request
-import json
 
-from fastapi import FastAPI
 from pydantic import BaseModel
-
-# from googletrans import Translator
+from transformers import BartForConditionalGeneration, AutoTokenizer
 from text2image.model.dalle.models import Rep_Dalle
-
 from transformers import BartForConditionalGeneration, AutoTokenizer
 
-# import googletrans
+from text2image.model.dalle.utils.utils import set_seed, clip_score
+import clip
+from PIL import Image
+import numpy as np
 
 import urllib.request
 import json
@@ -33,20 +33,13 @@ nltk.download('averaged_perceptron_tagger')
 nltk.download('punkt')
 # !necessary : papago api client 정보를 저장한 json file 과 해당 file path
 
-from text2image.model.dalle.utils.utils import set_seed, clip_score
-import clip
-from PIL import Image
-import numpy as np
-
+# load model
 global model
 model = BartForConditionalGeneration.from_pretrained('chi0/kobart-dial-sum')
 global tokenizer
 tokenizer = AutoTokenizer.from_pretrained('chi0/kobart-dial-sum')
-
-########### txt2img ###########
 global txt2imgModel
-txt2imgModel,_ = Rep_Dalle.from_pretrained("./text2image/model/exp2_ep4/exp2_ep4/29052022_082436")
-########### txt2img ###########
+txt2imgModel,_ = Rep_Dalle.from_pretrained("text2image/model/tf_model/model/29052022_082436")
 
 app = FastAPI()
 

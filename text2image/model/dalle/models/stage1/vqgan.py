@@ -1,6 +1,5 @@
 # ------------------------------------------------------------------------------------
-# Modified from VQGAN (https://github.com/CompVis/taming-transformers)
-# Copyright (c) 2020 Patrick Esser and Robin Rombach and Björn Ommer. All Rights Reserved.
+# Modified from minDALL-E (https://github.com/kakaobrain/minDALL-E)
 # ------------------------------------------------------------------------------------
 
 import torch
