@@ -38,7 +38,7 @@ python metirc/FID.py --path1 {origin_path} --path2 {target_path}
 ### Clip-Score
 ex) model: lafite
 ```shell
-python metirc/clip-score.py --prompt "sentence"
+python metirc/clip-score.py --txt {sentence} --num {int number}
 ```
 
 ## Folder Structure
