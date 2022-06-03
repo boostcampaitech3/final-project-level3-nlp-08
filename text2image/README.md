@@ -50,6 +50,7 @@ text2image/
     │   └── pixabay.py
     ├── metric/
     │   └── FID.py
+    │   └── CLIP.py
     └── model/
         ├── README.md
         ├── configs/
