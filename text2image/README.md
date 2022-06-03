@@ -2,21 +2,29 @@
 
 >본 모델은 사전 학습된 [minDALL-E](https://github.com/kakaobrain/minDALL-E) 모델을 Pixabay Custom Dataset으로 Fine-tuning한 모델입니다.
 
+<br><br>
 
 ## Usage
+
 ```python
 from dalle.models import Rep_Dalle
 model,_ = Rep_Dalle.from_pretrained(model_path)
 ```
 
-***
+<br>
 
 # CALL-E Project - Text to Image
+
+
 ## Requirements
 - ```pip install -r requirements.txt```
+
 <br>
+
 ## Dataset
+
 ### Crawling
+
 ```shell
     python crawling/pixabay.py
 ```
@@ -31,17 +39,25 @@ model,_ = Rep_Dalle.from_pretrained(model_path)
 <br>
 
 ## Metric
+
 ### FID
+
 ```shell
 python metirc/FID.py --path1 {origin_path} --path2 {target_path}
 ```
+
 ### Clip-Score
+
 ex) model: lafite
+
 ```shell
 python metirc/clip-score.py --txt {sentence} --num {int number}
 ```
 
+<br>
+
 ## Folder Structure
+
 ```
 .
 text2image/
@@ -101,13 +117,17 @@ text2image/
 <br>
 
 ## Usage
-***
+
+<br>
+
 ### Installing required libraries
+
 * `pip install -r requirements.txt`
 
 <br>
 
 ### Train & Evaluation Execution Code
+
 * Train : `python model/dalle/train.py`
 
 * Evaluation : `python model/dalle/inference.py -n {num_candidates} --prompt {sentence}`
@@ -115,7 +135,9 @@ text2image/
 <br>
 
 ### Config File Format
+
 * Config For Train
+
 ```
 model/configs/CALL-E.yaml
 ```
