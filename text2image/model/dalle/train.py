@@ -14,7 +14,7 @@ from logger.logger import setup_callbacks
 
 seed = 42
 path_upstream = 'minDALL-E/1.3B'
-config_file = './configs/transfer-imagenet-uncond-gen.yaml'
+config_file = './configs/CALL-E.yaml'
 config_downstream = config_file
 result_path = './base_result'
 data_dir = './img_data'
