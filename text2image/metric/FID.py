@@ -77,7 +77,7 @@ def main(args):
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--path1", dest="origin_path", default="./1.png")
-    parser.add_argument("--path2", dest="target_path", default="./2.png")
+    parser.add_argument("--path1", dest="origin_path", default="../assets/answer_image.png")
+    parser.add_argument("--path2", dest="target_path", default="../assets/generated_image.png")
     args = parser.parse_args()
     main(args)
