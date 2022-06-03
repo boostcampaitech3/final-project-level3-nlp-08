@@ -58,6 +58,6 @@ if __name__=="__main__":
     # 텍스트 입력 및 생성한 이미지 경로 설정
     parser = argparse.ArgumentParser()
     parser.add_argument("--txt", type=str, default="an armchair in the shape of an avocado")
-    parser.add_argument("--path", dest="img_path", type=str, default="./example.png")
+    parser.add_argument("--path", dest="img_path", type=str, default="../assets/example.png")
     args = parser.parse_args()
     main(args)
