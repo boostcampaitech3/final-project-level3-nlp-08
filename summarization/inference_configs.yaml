@@ -1,0 +1,15 @@
+ModelArguments:
+    model_name_or_path: 'chi0/kobart-dial-sum'
+    resize_position_embeddings: False
+
+DataTrainingArguments:
+    test_file: './data/aihub_valid.json'        # test data path
+    max_source_length: 512
+
+GenerateArguments:
+    num_beams: 5
+    max_length: 64
+    top_k: 50
+    top_p: 0.95
+    no_repeat_ngram_size: 3
+    temperature: 0.7

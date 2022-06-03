@@ -1,13 +1,9 @@
 .idea/
 *.yaml
-summarization/kobart/data/
-summarization/kobart/cache_data/
 *.json
 .DS_Store
 *.bin
 __pycache__
 wandb
-*.txt
 *.tsv
 *.pt
-*.json

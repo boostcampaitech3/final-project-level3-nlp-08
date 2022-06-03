@@ -35,11 +35,6 @@ set_seed(args.seed)
 USE_CUDA = torch.cuda.is_available()
 device = torch.device('cuda:0' if USE_CUDA else 'cpu')
 model,_ = Rep_Dalle.from_pretrained('../exp2_ep4/exp2_ep4/29052022_082436')  # This will automatically download the pretrained model.
-# model = torch.load('../model/pytorch_model.pth')
-# model,config = ImageGPT.from_pretrained("minDALL-E/1.3B",'../configs/exp1_ep4.yaml')
-# chck = torch.load("../exp2_ep4/exp2_ep4/29052022_082436/ckpt/last.ckpt")
-# model.load_state_dict(chck['state_dict'])
-# print(model)
 model.to(device=device)
 
 # Sampling

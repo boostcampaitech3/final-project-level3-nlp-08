@@ -1,6 +1,5 @@
 # ------------------------------------------------------------------------------------
-# minDALL-E
-# Copyright (c) 2021 Kakao Brain Corp. All Rights Reserved.
+# Modified from minDALL-E (https://github.com/kakaobrain/minDALL-E)
 # Licensed under the Apache License, Version 2.0 [see LICENSE for details]
 # ------------------------------------------------------------------------------------
 

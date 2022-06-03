@@ -1,0 +1,85 @@
+TrainingArguments:
+    output_dir: './results'
+
+    # Setting
+    do_train: True
+    do_eval: True
+    do_predict: False
+    predict_with_generate: True
+    save_total_limit: 3
+    fp16: True
+    fp16_opt_level: 'O1'
+    seed: 42
+    save_steps: 1000
+    load_best_model_at_end: False
+    report_to: 'wandb'
+    metric_for_best_model: 'STS'
+    greater_is_better: True
+
+    # HyperParameter
+    num_train_epochs: 5
+    learning_rate: 5.0e-05
+    warmup_steps: 500
+    weight_decay: 0.1
+    label_smoothing_factor: 0
+    lr_scheduler_type: 'linear'
+
+    # Batch Size
+    per_device_train_batch_size: 4
+    gradient_accumulation_steps: 16
+    per_device_eval_batch_size: 16
+
+    # Logging
+    logging_dir: "./logs"
+    logging_steps: 1000
+
+    # Evaluation
+    evaluation_strategy: 'steps' # epoch, no, steps
+    eval_steps: 1000
+
+ModelArguments:
+    model_name_or_path: 'gogamza/kobart-base-v2'
+    cache_dir: './cache_data/model.pt'
+    use_fast_tokenizer: True
+    use_auth_token: False
+    resize_position_embeddings: False
+    use_checkpoint: False
+
+EvalModelArguments:
+    eval_model_path: './cache_data/RDASS.pt'
+    eval_pretrained: 'klue/roberta-base'
+
+    eval_train_path: './data/KorSTS/sts-train.tsv'
+    eval_test_path: './data/KorSTS/sts-dev.tsv'
+
+    batch_size: 32
+    epoch: 5
+
+
+DataTrainingArguments:
+    train_file: "./data/Training"      # train data path
+    validation_file: './data/aihub_valid.json'  # vaild data path
+    # test_file: './data/aihub_valid.json'        # test data path
+
+    overwrite_cache: False
+    saved_data_path: "./cache_data/raw_data.pickle"
+    preprocessing_num_workers: null
+
+    max_source_length: 512  # TODO: 1026인지 확인
+    max_target_length: 64
+
+    val_max_target_length: 64
+    pad_to_max_length: True
+
+    max_train_samples: null     
+    max_eval_samples: null    
+    max_predict_samples: null   
+
+    num_beams: 5          
+    ignore_pad_token_for_loss: True
+    forced_bos_token: null      
+    
+WandbArguments:
+    project: "Final Project"
+    entity: "miml"
+    name: 'Last Model'

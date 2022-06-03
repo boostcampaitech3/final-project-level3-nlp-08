@@ -10,12 +10,16 @@ import yaml
 import json
 
 import urllib.request
-import json
 
 from pydantic import BaseModel
-
+from transformers import BartForConditionalGeneration, AutoTokenizer
+from text2image.model.dalle.models import Rep_Dalle
 from transformers import BartForConditionalGeneration, AutoTokenizer
 
+from text2image.model.dalle.utils.utils import set_seed, clip_score
+import clip
+from PIL import Image
+import numpy as np
 
 import urllib.request
 import json
@@ -34,6 +38,8 @@ global model
 model = BartForConditionalGeneration.from_pretrained('chi0/kobart-dial-sum')
 global tokenizer
 tokenizer = AutoTokenizer.from_pretrained('chi0/kobart-dial-sum')
+global txt2imgModel
+txt2imgModel,_ = Rep_Dalle.from_pretrained("./text2image/model/exp2_ep4/exp2_ep4/29052022_082436")
 
 app = FastAPI()
 
@@ -100,15 +106,16 @@ def mt(sentence, client_id, client_secret):
 
 ################ 전처리 ################
 
-def tokNJR(sentence):
-            tokenized = []
-            sentence = word_tokenize(sentence)
-            tags = pos_tag(sentence)
-            for (word, tag) in tags:
-                if tag[0]=='N' or tag[0]=='J' or tag[0]=='R':
-                    tokenized.append(word)
 
-            return tokenized
+def tokNVJR(sentence):
+    tokenized = []
+    sentence = word_tokenize(sentence)
+    tags = pos_tag(sentence)
+    for (word, tag) in tags:
+        if tag[0]=='N' or tag[0]=='V' or tag[0]=='J' or tag[0]=='R':
+            tokenized.append(word)
+
+    return tokenized
 
 
 def tokSTOP(sentence):
@@ -123,13 +130,14 @@ def transformText(text):
 
     sentences = []
     sentences.append(", ".join(tokSTOP(text)))
-    sentences.append(", ".join(tokNJR(text)))
+    sentences.append(", ".join(tokNVJR(text)))
     return sentences
 
 
 def preprocess(sentence):
     prefix = "A painting of "
     answer = []
+    print(transformText(sentence))
     for sentence in transformText(sentence):
         answer.append(prefix + sentence)
     
@@ -144,6 +152,54 @@ def ko2en(sentence):
     sentences = preprocess(sentence)
     return sentences
 
+################ Text2Image ################
+
+def txt2img(text):
+    set_seed(42)
+    device = 'cuda:0'
+    txt2imgModel.to(device=device)
+
+    # Sampling : enTexts = [stopwords버전, tokNJR버전 문장 문장] ==> 문장 2개
+    images = txt2imgModel.sampling(prompt=text,
+                            top_k=256,
+                            top_p=None,
+                            softmax_temperature=1.0,
+                            num_candidates=3,
+                            device=device).cpu().numpy()
+    images = np.transpose(images, (0, 2, 3, 1))
+
+    # CLIP Re-ranking
+    model_clip, preprocess_clip = clip.load("ViT-B/32", device=device)
+    model_clip.to(device=device)
+    ranks, scores = clip_score(prompt=text,
+                    images=images,
+                    model_clip=model_clip,
+                    preprocess_clip=preprocess_clip,
+                    device=device)
+
+    # Save images
+    images = images[ranks]
+    im = []
+    for i in range(3):
+        im.append(Image.fromarray((images[i]*255).astype(np.uint8)))
+
+    widths, heights = zip(*(i.size for i in im))
+
+    total_width = sum(widths)
+    max_height = max(heights)
+
+    new_im = Image.new('RGB', (total_width, max_height))
+
+    x_offset = 0
+    for i in im:
+        new_im.paste(i, (x_offset,0))
+        x_offset += i.size[0]
+
+    new_im = np.array(new_im)
+    new_im = new_im.tolist()
+    return new_im
+
+################ Text2Image ################
 
 class Item(BaseModel):
     dialogue: str
@@ -151,11 +207,10 @@ class Item(BaseModel):
 @app.post('/upload')
 async def upload_image(item: Item):
     kor_sum = postprocess_text_first_sent(generate_summary(item.dialogue))
-    
+
     result = ko2en(kor_sum[0])
-    # result : list
-    subprocess.run(['./text2image/model/test/sampling_ex.py','-n', '3','--prompt',result[0]],shell=True)
-    # os.system('python sampling_ex.py -n 3 --prompt '+result[0])
+    stop_img = txt2img(result[0])
+    # NVJR_imgs = txt2img(result[1])
 
 
-    return {"summary": result}
+    return {"summary": result, "kor_sum":kor_sum[0], "image_array":stop_img}

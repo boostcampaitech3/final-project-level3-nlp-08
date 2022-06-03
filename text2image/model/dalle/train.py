@@ -1,3 +1,7 @@
+# ------------------------------------------------------------------------------------
+# Modified from minDALL-E (https://github.com/kakaobrain/minDALL-E)
+# ------------------------------------------------------------------------------------
+
 import torch
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
@@ -18,11 +22,10 @@ n_gpus = 1
 train, val = None, None
 cleaning = False
 
-
-
-
-
 def main():
+    """
+    transfer learning minDALL-E with Pixabay Custom dataset for text2image
+    """
     torch.cuda.empty_cache()
     # mk dataframe
     df = mk_dataframe(seed)
