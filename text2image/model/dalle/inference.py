@@ -20,7 +20,7 @@ parser = argparse.ArgumentParser()
 # 추가된 argument
 parser.add_argument('--usetf', type=bool, default=True) # transfer learned model 사용 여부 : 사용(default)
 parser.add_argument('--model_dir', type=str, default="../exp2_ep4/exp2_ep4/29052022_082436") # transfer learned model 경로
-parser.add_argument('--client', type=int, default='./client.json') # papago api client 정보 저장된 json 위치 : 사전에 papago api발급 받아서 json파일로 정보 저장
+parser.add_argument('--client', type=str, default='./client.json') # papago api client 정보 저장된 json 위치 : 사전에 papago api발급 받아서 json파일로 정보 저장
 # 기존 argument
 parser.add_argument('-n', '--num_candidates', type=int, default=3)
 parser.add_argument('--prompt', type=str, default='A painting of a tree on the ocean') # input sentence(str) / input list object/ input txt path

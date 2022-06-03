@@ -7,6 +7,7 @@ import requests
 import json
 
 from fastapi import FastAPI
+from PIL import Image
 from io import StringIO
 from datetime import datetime
 import pandas as pd
@@ -14,6 +15,7 @@ import numpy as np
 import re
 import random
 import json
+
 
 # SETTING PAGE CONFIG TO WIDE MODE
 st.set_page_config(layout="wide")
@@ -210,6 +212,7 @@ def main():
 
     print(uploaded_file)
     if uploaded_file:
+
         js = txt_to_json(uploaded_file)  # json
 
         dialogue_data = preprocess(js) # str
@@ -217,8 +220,11 @@ def main():
         data = {'dialogue':dialogue_data}
         
         a = requests.post('http://127.0.0.1:8000/upload', data = json.dumps(data))
-    
-        st.write(a.json())
+        image = a.json()["image_array"]
+        image = np.array(image)
+        image = Image.fromarray((image * 255).astype(np.uint8))
+        st.write(a.json()["summary"])
+        st.image(image, caption='Uploaded Image')
 
 
 main()

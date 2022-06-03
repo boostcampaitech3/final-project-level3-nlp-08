@@ -23,6 +23,10 @@ from .tokenizer import build_tokenizer
 _MODELS = {
     'minDALL-E/1.3B': 'https://arena.kakaocdn.net/brainrepo/models/minDALL-E/57b008f02ceaa02b779c8b7463143315/1.3B.tar.gz'
 }
+USE_CUDA = torch.cuda.is_available()
+device = 'cpu'
+if USE_CUDA:
+    device = 'cuda:0'
 
 
 class Dalle(nn.Module):
@@ -66,7 +70,7 @@ class Dalle(nn.Module):
                  top_p: Optional[float] = None,
                  softmax_temperature: float = 1.0,
                  num_candidates: int = 96,
-                 device: str = 'cuda:0',
+                 device: str = device,
                  use_fp16: bool = True) -> torch.FloatTensor:
         self.stage1.eval()
         self.stage2.eval()
@@ -104,6 +108,7 @@ class Rep_Dalle(pl.LightningModule):
         self.config_stage2 = config.stage2
         self.config = config
         self.config_dataset = config.dataset
+
         
         self.stage1.eval()
         for p in self.stage1.parameters():
@@ -115,7 +120,7 @@ class Rep_Dalle(pl.LightningModule):
                         path_downstream: Optional[str] = None) -> Tuple[nn.Module, OmegaConf]:
         path_upstream = _MODELS[path_upstream] if path_upstream in _MODELS else path_upstream
         path_upstream = utils.realpath_url_or_path(path_upstream, root=os.path.expanduser("~/.cache/minDALL-E"))
-        
+
         if path_downstream:
             config_base = get_base_config(use_default=False)
             config_down = OmegaConf.load(path_downstream)
@@ -135,7 +140,7 @@ class Rep_Dalle(pl.LightningModule):
             model.stage1.from_ckpt(os.path.join(path_upstream, 'stage1_last.ckpt'), strict=True)
             model.stage2.from_ckpt(os.path.join(path_upstream, 'stage2_last.ckpt'), strict=False)
         elif os.path.exists(os.path.join(path_upstream, 'ckpt/last.ckpt')):
-            chck = torch.load(os.path.join(path_upstream, 'ckpt/last.ckpt'))
+            chck = torch.load(os.path.join(path_upstream, 'ckpt/last.ckpt'),map_location=torch.device(device))
             model.load_state_dict(chck['state_dict'])
         return model, config_down
 
@@ -146,7 +151,7 @@ class Rep_Dalle(pl.LightningModule):
                  top_p: Optional[float] = None,
                  softmax_temperature: float = 1.0,
                  num_candidates: int = 96,
-                 device: str = 'cuda:0',
+                 device: str = device,
                  use_fp16: bool = True) -> torch.FloatTensor:
         self.stage1.eval()
         self.stage2.eval()
@@ -175,7 +180,7 @@ class Rep_Dalle(pl.LightningModule):
                  top_p: Optional[float] = None,
                  softmax_temperature: float = 1.0,
                  num_candidates: int = 96,
-                 device: str = 'cuda:0',
+                 device: str = device,
                  use_fp16: bool = True) -> torch.FloatTensor:
 
         tokens = self.tokenizer.encode(prompt)
@@ -199,7 +204,6 @@ class Rep_Dalle(pl.LightningModule):
     def forward(self,
                 images: torch.FloatTensor,
                 tokens: torch.LongTensor,) -> torch.FloatTensor:
-        device = 'cuda:0'
 
         with torch.no_grad():
             with autocast(enabled=False):
