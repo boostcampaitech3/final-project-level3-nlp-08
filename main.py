@@ -2,6 +2,7 @@ from typing import Optional, List
 from fastapi import FastAPI, File, UploadFile
 import os
 import streamlit as st
+import subprocess
 
 import io
 import os
@@ -23,12 +24,12 @@ import nltk
 from nltk.tokenize import word_tokenize
 from nltk.tag import pos_tag
 from nltk.corpus import stopwords
-# nltk.download('stopwords')
-# nltk.download('averaged_perceptron_tagger')
-# nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('averaged_perceptron_tagger')
+nltk.download('punkt')
 # !necessary : papago api client 정보를 저장한 json file 과 해당 file path
 
-
+# load model
 global model
 model = BartForConditionalGeneration.from_pretrained('chi0/kobart-dial-sum')
 global tokenizer
@@ -152,5 +153,9 @@ async def upload_image(item: Item):
     kor_sum = postprocess_text_first_sent(generate_summary(item.dialogue))
     
     result = ko2en(kor_sum[0])
+    # result : list
+    subprocess.run(['./text2image/model/test/sampling_ex.py','-n', '3','--prompt',result[0]],shell=True)
+    # os.system('python sampling_ex.py -n 3 --prompt '+result[0])
+
 
     return {"summary": result}
