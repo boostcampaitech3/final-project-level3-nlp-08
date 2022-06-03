@@ -208,7 +208,7 @@ def preprocess(js_file):
 def main():
     st.title("Golden summary & Show image")
     
-    uploaded_file = st.file_uploader("Input your dialogue data", type=["json"])
+    uploaded_file = st.file_uploader("Input your dialogue data", type=["txt"])
 
     print(uploaded_file)
     if uploaded_file:
@@ -223,6 +223,7 @@ def main():
         image = a.json()["image_array"]
         image = np.array(image)
         image = Image.fromarray((image * 255).astype(np.uint8))
+        st.write(a.json()["summary"])
         st.image(image, caption='Uploaded Image')
 
 
