@@ -109,7 +109,8 @@ def mt(sentence, client_id, client_secret):
 
 def tokNVJR(sentence):
     tokenized = []
-    sentence = word_tokenize(sentence)
+    split_by_and = sentence.split(" and ")[0]
+    sentence = word_tokenize(split_by_and)
     tags = pos_tag(sentence)
     for (word, tag) in tags:
         if tag[0]=='N' or tag[0]=='V' or tag[0]=='J' or tag[0]=='R':
@@ -120,7 +121,8 @@ def tokNVJR(sentence):
 
 def tokSTOP(sentence):
     sw = stopwords.words('english')
-    sentence = word_tokenize(sentence.lower())
+    split_by_and = sentence.split(" and ")[0]
+    sentence = word_tokenize(split_by_and.lower())
     words = [word for word in sentence if word not in sw]
     
     return words

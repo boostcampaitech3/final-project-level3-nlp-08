@@ -222,8 +222,9 @@ def main():
 
         a = requests.post('http://127.0.0.1:8000/upload', data=json.dumps(data))
         image = a.json()["image_array"]
-        image = np.array(image)
-        image = Image.fromarray((image * 255).astype(np.uint8))
+        image_array = np.array(image)
+        converted_image_array = 255 - (image_array * 255).astype(np.uint8)
+        image = Image.fromarray(converted_image_array)
         st.write(a.json()["summary"])
         st.image(image, caption='Uploaded Image')
 
