@@ -7,3 +7,5 @@ __pycache__
 wandb
 *.tsv
 *.pt
+29052022_082436/
+.ipynb_checkpoints/
