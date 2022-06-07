@@ -55,6 +55,7 @@
 |-- app.py - Frontend Service
 |-- main.py - Backend Service
 |-- requirements.txt
+|-- client.json - Papago API ID & Key
 └── service - methods for frontend/backend
     |-- __init__.py
     |-- back_function.py  - Backend Method
