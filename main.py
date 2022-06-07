@@ -2,9 +2,9 @@ from fastapi import FastAPI
 from service.back_function import *
 from pydantic import BaseModel
 
-from text2image.model.dalle.models import Rep_Dalle
+from service.image_to_text import Rep_Dalle
 from transformers import BartForConditionalGeneration, AutoTokenizer
-# from text2image.model.dalle.utils.utils import set_seed, clip_score
+from service.utils import set_seed, clip_score
 
 import json
 import numpy as np
@@ -15,7 +15,7 @@ model = BartForConditionalGeneration.from_pretrained('chi0/kobart-dial-sum')
 global tokenizer
 tokenizer = AutoTokenizer.from_pretrained('chi0/kobart-dial-sum')
 global txt2imgModel
-txt2imgModel,_ = Rep_Dalle.from_pretrained("text2image/model/tf_model/model/29052022_082436")
+txt2imgModel,_ = Rep_Dalle.from_pretrained("service/29052022_082436")
 
 app = FastAPI()
 
