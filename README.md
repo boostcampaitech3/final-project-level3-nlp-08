@@ -42,8 +42,7 @@
 
 
 ## 3. 시연 영상
--- 영상 -- 
-
+![데모_NLP_08_CALL-E](https://user-images.githubusercontent.com/69616444/172341768-bcd64f1d-d197-45dd-a83e-e170c9932561.gif)
 
 ## 4. Structure
 ```
