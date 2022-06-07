@@ -1,6 +1,4 @@
 # CALL-E
--- 프로젝트 설명란 --
-채팅 로그 요약문으로 단체카톡방 대표 이미지를 생성해주는 ChatDALL-E
 
 ## 1. About Us
 
@@ -13,26 +11,36 @@
 
 ### Contribution  
 
-`임동진` &nbsp; : &nbsp; Dialogue Summarization • Backend <br>
+`임동진` &nbsp; : &nbsp; Dialogue Summarization • Backend • Product Serving <br>
 `정재윤` &nbsp; : &nbsp; Dataset Processing • Frontend <br>
 `조설아` &nbsp; : &nbsp; Text-to-Image • Text processing <br>
 `허치영` &nbsp; : &nbsp; Dialogue Summarization • Documentation <br>
 `이보림` &nbsp; : &nbsp; Text-to-Image • Image Dataset <br>
 <br>
-
+***
 ## 2. Project
+### 프로젝트 1줄 설명
+채팅 로그 요약문으로 단체카톡방 대표 이미지를 생성해주는 ChatDALL-E
 
-### 프로젝트 목표
-- 목표
-  - [작성 예정]
-- 기능
+### 발표 PPT
+[발표 PPT]
+
+### 기획 의도
+- 각 채팅방의 특징을 잘 표현하는 대표 이미지 생성
+
+- [정리]
+
+
+
+
+### 기능
   - 최근 대화 내역의 요약 문장 제공
   - 최근 대화 내역 요약 문장을 나타내는 이미지 제공
 
 
-### 프로젝트 구조
+### Architecutre
 -- block diagram -- 
-
+***
 ## 3. 시연 영상
 -- 영상 -- 
 
@@ -40,98 +48,15 @@
 
 ```
 .
-├── summarization
-│   ├── ...
-│   ├── SBERT
-│   │   ├── ...
-│   │   ├── README.md
-│   │   ├── __init__.py
-│   │   └── sbert.py
-│   ├── cache_data
-│   │   ├── ...
-│   │   └── Trash Data.txt
-│   ├── data
-│   │   ├── ...
-│   │   └── README.md
-│   ├── data_loader
-│   │   ├── ...
-│   │   ├── README.md
-│   │   ├── __init__.py
-│   │   ├── get_data.py
-│   │   ├── processing.py
-│   │   └── tokenized_data.py
-│   ├── logger
-│   │   ├── ...
-│   │   ├── __init__.py
-│   │   └── logger.py
-│   ├── tokenizer
-│   │   ├── ...
-│   │   ├── README.md
-│   │   ├── __init__.py
-│   │   └── tokenzier.py
-│   ├── README.md
-│   ├── __init__.py
-│   ├── arguments.py
-│   ├── configs.yaml
-│   ├── inference.py
-│   ├── inference_configs.yaml
-│   ├── requirements.txt
-│   ├── train.py
-│   └── utils.py
-├── text2image
-│   ├── ...
-│   ├── assets
-│   ├── crawling
-│   │   ├── ...
-│   │   └── pixabay.py
-│   ├── metric
-│   │   ├── ...
-│   │   ├── CLIP.py
-│   │   └── FID.py
-│   ├── model
-│   │   ├── ...
-│   │   ├── configs
-│   │   │   ├── ...
-│   │   │   └── CALL-E.yaml
-│   │   ├── dalle
-│   │   │   ├── ...
-│   │   │   ├── data_loader
-│   │   │   │   ├── ...
-│   │   │   │   ├── __init__.py
-│   │   │   │   ├── dataset.py
-│   │   │   │   └── utils.py
-│   │   │   ├── logger
-│   │   │   │   ├── ...
-│   │   │   │   ├── __init__.py
-│   │   │   │   └── loger.py
-│   │   │   ├── models
-│   │   │   │   ├── ...
-│   │   │   │   ├── stage1
-│   │   │   │   ├── stage2
-│   │   │   │   ├── __init__.py
-│   │   │   │   └── tokenizer.py
-│   │   │   ├── utils
-│   │   │   │   ├── ...
-│   │   │   │   ├── __init__.py
-│   │   │   │   ├── config.py
-│   │   │   │   ├── sampling.py
-│   │   │   │   └── utils.py
-│   │   │   ├── LICENSE
-│   │   │   ├── LICENSE.apache-2.0
-│   │   │   ├── __init__.py
-│   │   │   ├── ...inference.py
-│   │   │   ├── train.py
-│   │   │   └── translate.py
-│   │   ├── test
-│   │   ├── .gitattributes
-│   │   ├── .gitignore
-│   │   └── .setup.cfg
-│   └── README.md
+├── service - methods for frontend/backend
+│   └── ...
+├── summarization - model for dialogue summarization
+│   └── ...
+├── text2image - model for text-to-image (minDALL-E)
+│   └── ...
 ├── .gitignore
-├── Dockerfile
 ├── README.md
 ├── app.py
-├── cloudbuild.yaml
 ├── main.py
 └── requirements.txt
 ```
