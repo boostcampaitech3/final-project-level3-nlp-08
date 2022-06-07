@@ -1,27 +1,7 @@
-# 한국어 대화 요약 생성을 위한 (Pretrained) KoBART model
+# CALL-E Project - Dialogue Summarization
 
 >본 모델은 사전 학습된 [SKT-AI/KoBART](https://github.com/SKT-AI/KoBART#release) 모델을 [AI Hub 한국어 대화 요약 데이터셋](https://aihub.or.kr/aidata/30714)로 fine-tuning한 모델입니다. <br><br>
-Fine-tuning된 모델은 huggingface에 업로드 되어있습니다.<br>[Dialogue_Summarization Model](https://huggingface.co/chi0/kobart-dial-sum)
-
-
-## Usage
-```python
-from transformers import BartForConditionalGeneration
-model_name = 'chi0/kobart-dial-sum'
-model = BartForConditionalGeneration.from_pretrained(model_name)
-```
-
-***
-
-# CALL-E Project - Dialogue Summarization
-## Requirements
-***
-* PyTorch >= 1.7.1(1.7.1 recommended)
-* Python >= 3.8.5(3.8.5 recommended)
-* sentence-transformers==2.2.0(Optional for `SBERT`)
-* wandb == 0.12.17
-* tqdm >= 4.51.0
-
+Fine-tuning된 모델은 huggingface에 업로드 되어있습니다.<br>[Dialogue Summarization Model](https://huggingface.co/chi0/kobart-dial-sum)
 <br>
 
 ## Features
@@ -32,8 +12,7 @@ model = BartForConditionalGeneration.from_pretrained(model_name)
 
 <br>
 
-## Folder Structure
-***
+## Structure
 ```
 .
 ├── SBERT - Training Models to Use as Metrics(Cosine Similarity)
@@ -91,9 +70,20 @@ model = BartForConditionalGeneration.from_pretrained(model_name)
 <br>
 
 ## Usage
-***
+```python
+from transformers import BartForConditionalGeneration
+model_name = 'chi0/kobart-dial-sum'
+model = BartForConditionalGeneration.from_pretrained(model_name)
+```
+
 ### Installing required libraries
 * `pip install -r requirements.txt`
+  * PyTorch >= 1.7.1(1.7.1 recommended)
+  * Python >= 3.8.5(3.8.5 recommended)
+  * sentence-transformers==2.2.0(Optional for **SBERT**)
+  * wandb == 0.12.17
+  * tqdm >= 4.51.0
+
 
 <br>
 
@@ -104,8 +94,8 @@ model = BartForConditionalGeneration.from_pretrained(model_name)
 
 <br>
 
-### Config File Format
-* Config For Train
+### Configuration File Format
+* For Train
 
 ```yaml
 TrainingArguments:
@@ -169,7 +159,6 @@ EvalModelArguments:
 DataTrainingArguments:
     train_file: "./data/Training"      # train data path
     validation_file: './data/aihub_valid.json'  # vaild data path
-    # test_file: './data/aihub_valid.json'        # test data path
 
     overwrite_cache: False
     saved_data_path: "./cache_data/raw_data.pickle"
@@ -197,7 +186,7 @@ WandbArguments:
 
 <br>
 
-* Config for Evaluation
+* For Evaluation
 
 ```yaml
 ModelArguments:
@@ -205,7 +194,7 @@ ModelArguments:
     resize_position_embeddings: False
 
 DataTrainingArguments:
-    test_file: './data/aihub_valid.json'        # test data path
+    test_file: './data/aihub_valid.json'
     max_source_length: 512
 
 GenerateArguments:
