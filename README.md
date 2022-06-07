@@ -47,32 +47,30 @@
 ## 4. Structure
 ```
 .
-├─assets
-├─service
-│  ├─29052022_082436
-│  │  ├─ckpt
-│  │  ├─log
-│  │  │  └─iGPT
-│  │  │      └─version_0
-│  │  └─tokenizer
-│  └─utils
-│      ├─.ipynb_checkpoints
-│      └─__pycache__
-├─summarization
-└─text2image
-
-.
-├── service - methods for frontend/backend
-│   └── ...
 ├── summarization - model for dialogue summarization
 │   └── ...
 ├── text2image - model for text-to-image (minDALL-E)
 │   └── ...
-├── .gitignore
-├── README.md
-├── app.py - Frontend Service
-├── main.py - Backend Service
-└── requirements.txt
+|-- README.md
+|-- app.py - Frontend Service
+|-- main.py - Backend Service
+|-- requirements.txt
+└── service - methods for frontend/backend
+    |-- __init__.py
+    |-- back_function.py  - Backend Method
+    |-- front_function.py - Frontend Method
+    |-- image_to_text.py  - Image to Text Model Method
+    └── utils             - Modules required to load the minDALL-E
+        |-- __init__.py
+        |-- config.py
+        |-- layers.py
+        |-- layers2.py
+        |-- sampling.py
+        |-- tokenizer.py
+        |-- transformer.py
+        |-- utils.py
+        └── vqgan.py
+
 ```
 
 
