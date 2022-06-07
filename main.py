@@ -4,7 +4,6 @@ from pydantic import BaseModel
 
 from service.image_to_text import Rep_Dalle
 from transformers import BartForConditionalGeneration, AutoTokenizer
-from service.utils import set_seed, clip_score
 
 import json
 import numpy as np

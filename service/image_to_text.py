@@ -12,12 +12,13 @@ from omegaconf import OmegaConf
 from torch.cuda.amp import autocast
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.nn import functional as F
-from .stage1.vqgan import VQGAN
-from .stage2.transformer import Transformer1d, iGPT
-from .. import utils
-from ..utils.config import get_base_config
-from ..utils.sampling import sampling, sampling_igpt, get_positional_encoding
-from .tokenizer import build_tokenizer
+
+from service.utils.vqgan import VQGAN
+from service.utils.transformer import Transformer1d, iGPT
+from service.utils import utils
+from service.utils.config import get_base_config
+from service.utils.sampling import sampling, sampling_igpt, get_positional_encoding
+from service.utils.tokenizer import build_tokenizer
 
 _MODELS = {
     'minDALL-E/1.3B': 'https://arena.kakaocdn.net/brainrepo/models/minDALL-E/57b008f02ceaa02b779c8b7463143315/1.3B.tar.gz'
