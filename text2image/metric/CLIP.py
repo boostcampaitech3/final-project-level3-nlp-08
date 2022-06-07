@@ -1,17 +1,9 @@
 # 라이브러리 불러오기
 import torch
 import numpy as np
-import pickle
-import os
 from PIL import Image
-from pathlib import Path
-from tqdm import tqdm
-import dnnlib, legacy
 import clip
 import torch.nn.functional as F
-import torchvision.transforms as T
-from tqdm import tqdm
-import scipy
 import argparse
 
 
@@ -57,7 +49,7 @@ def main(args):
 if __name__=="__main__":
     # 텍스트 입력 및 생성한 이미지 경로 설정
     parser = argparse.ArgumentParser()
-    parser.add_argument("--txt", type=str, default="an armchair in the shape of an avocado")
+    parser.add_argument("--txt", type=str, default="A painting of a tree on the ocean")
     parser.add_argument("--path", dest="img_path", type=str, default="../assets/example.png")
     args = parser.parse_args()
     main(args)

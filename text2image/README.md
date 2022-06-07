@@ -94,14 +94,14 @@ model,_ = Rep_Dalle.from_pretrained(model_path)
 ```
 ### Metric
 
-#### FID
+#### FID-Score
 ```shell
 python metirc/FID.py --path1 {origin_path} --path2 {target_path}
 ```
 
-#### CLIP-Score (LAFITE)
+#### CLIP-Score
 ```shell
-python metirc/clip-score.py --txt {sentence} --num {int number}
+python metirc/clip-score.py --txt {sentence} --path {image_path}
 ```
 
 ### Train & Evaluation Execution Code
