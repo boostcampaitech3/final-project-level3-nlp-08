@@ -25,27 +25,26 @@
 ### 발표 PPT
 [발표 PPT]
 
-### 기획 의도
+### WHY?
 - 각 채팅방의 특징을 잘 표현하는 대표 이미지 생성
 
-- [정리]
+- 채팅방 혼동으로 인해 의도와 다른 채팅방에 메시지를 잘못 전송하는 경우를 방지하기 위함
 
 
+### HOW?
+- 최근 대화 내역의 요약 문장 제공
 
-
-### 기능
-  - 최근 대화 내역의 요약 문장 제공
-  - 최근 대화 내역 요약 문장을 나타내는 이미지 제공
+- 최근 대화 내역 요약 문장을 나타내는 이미지 제공
 
 
 ### Architecutre
 -- block diagram -- 
+
 ***
 ## 3. 시연 영상
 -- 영상 -- 
-
-## 4. Usage
-
+***
+## 4. Structure
 ```
 .
 ├── service - methods for frontend/backend
@@ -56,15 +55,41 @@
 │   └── ...
 ├── .gitignore
 ├── README.md
-├── app.py
-├── main.py
+├── app.py - Frontend Service
+├── main.py - Backend Service
 └── requirements.txt
 ```
 
-## 5. References
+
+
+***
+## 5. Usage
+### Installing required libraries
+* `pip install -r requirements.txt --use-feature=2020-resolver`
+  * use-feature : Library Dependency Resolver를 위한 Argument
+
+### Run Frontend-File
+* `streamlit run app.py`
+
+### Run Backend-File
+* `uvicorn main:app`
+
+### .ckpt에 대한 설명
+
+### Dialogue Summarization Model에 대한 설명
+
+***
+## 6. Product Serving
+### GCP 성능? 및 GPU 능력?
+
+### Service 제공 IP
+
+***
+## 6. References
 ### Datasets
 - [AI Hub 한국어 대화 요약 데이터셋](https://aihub.or.kr/aidata/30714)
 - [Pixabay](https://pixabay.com/ko/)
+- [KorSTS](https://github.com/kakaobrain/KorNLUDatasets)
 
 ### Papers
 - [Ham, Jiyeon, et al. "Kornli and korsts: New benchmark datasets for korean natural language understanding." arXiv preprint arXiv:2004.03289 (2020).](https://arxiv.org/pdf/2004.03289.pdf)
@@ -77,5 +102,7 @@
 
 ### Models
 - [kakaobrain/minDALL-E](https://github.com/kakaobrain/minDALL-E)
+- [Lafite](https://github.com/drboog/Lafite)
+- [Latent-Diffusion](https://github.com/CompVis/latent-diffusion)
 - [STK-AI/KoBART](https://github.com/SKT-AI/KoBART)
 - [AIRC-KETI/KE-T5](https://github.com/AIRC-KETI/ke-t5)
