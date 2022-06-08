@@ -131,6 +131,9 @@ model = BartForConditionalGeneration.from_pretrained(model_name)
 - Port : 8501을 제외한 모든 포트는 외부에서 통과 불가능하도록 설정
 
 ## Cloud에 서비스 활용 방법
+0. `pip install -r requirements.txt --use-feature=2020-resolver`
+   * pip이 설치 되어 있지 않다면 pip 설치가 선행되어야 
+
 1. service directory, main.py, app.py를 Cloud에 Load함
 
 2. Fine-Tuning 시킨 Text to Image 모델에 대해 저장된 State들을 service 폴더 아래에 저장함
