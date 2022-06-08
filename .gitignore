@@ -8,4 +8,5 @@ wandb
 *.tsv
 *.pt
 29052022_082436/
+0608/
 .ipynb_checkpoints/
