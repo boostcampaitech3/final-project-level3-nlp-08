@@ -10,6 +10,10 @@ import nltk
 from nltk.tokenize import word_tokenize
 from nltk.tag import pos_tag
 from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
+lemmatizer = WordNetLemmatizer()
+nltk.download('omw-1.4')
+nltk.download('wordnet')
 nltk.download('stopwords')
 nltk.download('averaged_perceptron_tagger')
 nltk.download('punkt')
@@ -46,12 +50,17 @@ def tokNVJR(sentence):
     tags = pos_tag(sentence)
     for (word, tag) in tags:
         if tag[0]=='N' or tag[0]=='V' or tag[0]=='J' or tag[0]=='R':
+            word = lemmatizer.lemmatize(word)
             tokenized.append(word)
 
     return tokenized
 
 def tokSTOP(sentence):
     sw = stopwords.words('english')
+    sw.append("'m")
+    sw.append("'s")
+    sw.append("'re")
+    sw.append("'ve")
     sentence = word_tokenize(sentence.lower())
     words = [word for word in sentence if word not in sw]
     

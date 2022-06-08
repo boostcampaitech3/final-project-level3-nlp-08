@@ -58,7 +58,11 @@ class Item(BaseModel):
 async def upload_image(item: Item):
     kor_sum = postprocess_text_first_sent(generate_summary(item.dialogue))
 
-    result = ko2en(client, kor_sum[0])
+    return {"kor_sum":kor_sum[0]}
+
+@app.post('/images')
+async def make_image(item: Item):
+    result = ko2en(client, item.dialogue)
     stop_img = txt2img(txt2imgModel, result[0])
 
-    return {"summary": result, "kor_sum":kor_sum[0], "image_array":stop_img}
+    return {"image_array":stop_img}
