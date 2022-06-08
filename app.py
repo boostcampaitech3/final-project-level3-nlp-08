@@ -43,7 +43,7 @@ def main():
 
         with st.spinner("사진 생성중..."):
             data2 = {'dialogue': summary}
-            a = requests.post('http://127.0.0.1:8000/image', data=json.dumps(data2))
+            b = requests.post('http://127.0.0.1:8000/images', data=json.dumps(data2))
 
             image_arrays = b.json()["image_array"]
 

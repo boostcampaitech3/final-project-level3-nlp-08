@@ -11,6 +11,8 @@ from nltk.tokenize import word_tokenize
 from nltk.tag import pos_tag
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
+from nltk.stem import WordNetLemmatizer
+lemmatizer = WordNetLemmatizer()
 nltk.download('omw-1.4')
 nltk.download('wordnet')
 nltk.download('stopwords')
@@ -62,10 +64,10 @@ def tokNVJR(sentence):
 
 def tokSTOP(sentence):
     sw = stopwords.words('english')
-    stop_words.append("'m")
-    stop_words.append("'s")
-    stop_words.append("'re")
-    stop_words.append("'ve")
+    sw.append("'m")
+    sw.append("'s")
+    sw.append("'re")
+    sw.append("'ve")
     sentence = word_tokenize(sentence.lower())
     words = [word for word in sentence if word not in sw]
 
