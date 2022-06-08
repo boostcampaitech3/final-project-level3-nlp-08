@@ -10,9 +10,13 @@ import nltk
 from nltk.tokenize import word_tokenize
 from nltk.tag import pos_tag
 from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
 nltk.download('stopwords')
 nltk.download('averaged_perceptron_tagger')
 nltk.download('punkt')
+nltk.download('omw-1.4')
+nltk.download('wordnet')
+
 
 ################ 후처리(Dialogue Summarization) ################
 def postprocess_text_first_sent(preds):
@@ -41,17 +45,23 @@ def mt(sentence, client_id, client_secret):
 
 ################ 전처리(T2I) 함수 ################
 def tokNVJR(sentence):
+    lemmatizer = WordNetLemmatizer()
     tokenized = []
     sentence = word_tokenize(sentence)
     tags = pos_tag(sentence)
     for (word, tag) in tags:
         if tag[0]=='N' or tag[0]=='V' or tag[0]=='J' or tag[0]=='R':
+            word = lemmatizer.lemmatize(word)
             tokenized.append(word)
 
     return tokenized
 
 def tokSTOP(sentence):
     sw = stopwords.words('english')
+    sw.append("'m")
+    sw.append("'s")
+    sw.append("'re")
+    sw.append("'ve")
     sentence = word_tokenize(sentence.lower())
     words = [word for word in sentence if word not in sw]
     
@@ -66,7 +76,8 @@ def transformText(text):
 
 
 def preprocess(sentence):
-    prefix = "A painting of "
+    # prefix = "A painting of "
+    prefix = ""
     answer = []
 
     for sentence in transformText(sentence):

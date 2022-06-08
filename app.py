@@ -26,11 +26,11 @@ def main():
 
     uploaded_file = st.file_uploader("Input your dialogue data", type=["txt"])
     print(uploaded_file)
-    
+
     if uploaded_file:
         dialogue_data = preprocess(txt_to_json(uploaded_file))  # str
         data = {'dialogue': dialogue_data}
-        
+
         images = []
 
         with st.spinner("사진 생성중..."):
@@ -38,10 +38,11 @@ def main():
             st.write(a.json())
 
             image_arrays = a.json()["image_array"]
-            
+
             for image_array in image_arrays:
                 image_array = np.array(image_array)
-                converted_image_array = 255 - (image_array * 255).astype(np.uint8)
+                # converted_image_array = 255 - (image_array * 255).astype(np.uint8)
+                converted_image_array = (image_array * 255).astype(np.uint8)
                 image = Image.fromarray(converted_image_array)
                 images.append(image)
                 st.write(a.json()["summary"])
@@ -56,7 +57,7 @@ def main():
             buf = BytesIO()
             img.save(buf, format="PNG")
             byte_img = buf.getvalue()
-            
+
             st.download_button(label="Download " + multi_select[i], data=byte_img, file_name= multi_select[i] + '.png')
 
 main()
