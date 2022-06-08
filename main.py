@@ -53,8 +53,6 @@ def generate_summary(dialogue:str):
     return output_str
 
 
-################ Text2Image ################
-
 class Item(BaseModel):
     dialogue: str
 

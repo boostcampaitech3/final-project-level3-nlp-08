@@ -1,7 +1,6 @@
 import json
 import urllib.request
 
-from PIL import Image
 import numpy as np
 from text2image.model.dalle.utils.utils import set_seed, clip_score
 import clip
@@ -54,8 +53,7 @@ def tokNVJR(sentence):
 
 def tokSTOP(sentence):
     sw = stopwords.words('english')
-    split_by_and = sentence.split(" and ")[0]
-    sentence = word_tokenize(split_by_and.lower())
+    sentence = word_tokenize(sentence.lower())
     words = [word for word in sentence if word not in sw]
     
     return words
@@ -111,22 +109,11 @@ def txt2img(txt2imgModel, text):
 
     # Save images
     images = images[ranks]
-    im = []
-    for i in range(3):
-        im.append(Image.fromarray((images[i]*255).astype(np.uint8)))
+    imgs = []
 
-    widths, heights = zip(*(i.size for i in im))
+    for i in images:
+        i = np.array(i)
+        i = i.tolist()
+        imgs.append(i)
 
-    total_width = sum(widths)
-    max_height = max(heights)
-
-    new_im = Image.new('RGB', (total_width, max_height))
-
-    x_offset = 0
-    for i in im:
-        new_im.paste(i, (x_offset,0))
-        x_offset += i.size[0]
-
-    new_im = np.array(new_im)
-    new_im = new_im.tolist()
-    return new_im
+    return imgs
