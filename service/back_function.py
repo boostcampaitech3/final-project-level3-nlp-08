@@ -1,9 +1,11 @@
+from service.utils.utils import set_seed, clip_score
+
+import clip
+import torch
 import json
 import urllib.request
 
 import numpy as np
-from service.utils.utils import set_seed, clip_score
-import clip
 
 ################ 전처리를 위한 Module 다운 ################
 import nltk
@@ -103,7 +105,7 @@ def ko2en(client, sentence):
 ################ Text-to-Image 함수 ################
 def txt2img(txt2imgModel, text):
     set_seed(42)
-    device = 'cuda:0'
+    device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     txt2imgModel.to(device=device)
 
     # Sampling : enTexts = [stopwords버전, tokNJR버전 문장 문장] ==> 문장 2개
@@ -111,7 +113,7 @@ def txt2img(txt2imgModel, text):
                                    top_k=256,
                                    top_p=None,
                                    softmax_temperature=1.0,
-                                   num_candidates=3,
+                                   num_candidates=3,          # 이미지 개수
                                    device=device).cpu().numpy()
     images = np.transpose(images, (0, 2, 3, 1))
 

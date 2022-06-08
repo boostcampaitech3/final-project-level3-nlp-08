@@ -14,6 +14,10 @@ from transformers import BartForConditionalGeneration, AutoTokenizer
 
 import json
 
+global client
+with open("./client.json", "r") as file:
+    client = json.load(file)
+
 # load model
 global model
 model = BartForConditionalGeneration.from_pretrained('chi0/kobart-dial-sum')
@@ -24,11 +28,6 @@ txt2imgModel,_ = Rep_Dalle.from_pretrained("service/29052022_082436")
 
 
 app = FastAPI()
-
-global client
-with open("./client.json", "r") as file:
-    client = json.load(file)
-
 ################ 요약 ################
 def generate_summary(dialogue:str):
     global model
