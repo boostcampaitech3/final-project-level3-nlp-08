@@ -9,7 +9,7 @@ import torch.nn as nn
 from typing import Optional, Tuple, List
 from torch.cuda.amp import autocast
 from omegaconf import OmegaConf
-from .layers import Block
+from .transfomer_layer import Block
 
 
 class Transformer1d(nn.Module):

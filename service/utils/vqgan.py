@@ -7,7 +7,7 @@ import torch.nn as nn
 from typing import List, Tuple, Optional
 from einops import rearrange
 from omegaconf import OmegaConf
-from .layers2 import Encoder, Decoder
+from .vqgan_layer import Encoder, Decoder
 
 
 class VectorQuantizer(nn.Module):
