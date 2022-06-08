@@ -26,18 +26,28 @@ def main():
 
     if uploaded_file:
         dialogue_data = preprocess(txt_to_json(uploaded_file))  # str
-
         data = {'dialogue': dialogue_data}
 
-        a = requests.post('http://127.0.0.1:8000/upload', data=json.dumps(data))
-        st.write(a.json())
+        with st.spinner("사진 생성중..."):
+            a = requests.post('http://127.0.0.1:8000/upload', data=json.dumps(data))
+            st.write(a.json())
 
-        image_array = a.json()["image_array"]
-        image_array = np.array(image_array)
-        converted_image_array = 255 - (image_array * 255).astype(np.uint8)
-        image = Image.fromarray(converted_image_array)
-        st.write(a.json()["summary"])
-        st.image(image, caption='Uploaded Image')
+            image_array = a.json()["image_array"]
+            image_array = np.array(image_array)
+            converted_image_array = 255 - (image_array * 255).astype(np.uint8)
+            image = Image.fromarray(converted_image_array)
+            st.write(a.json()["summary"])
+            st.image(image, caption='Uploaded Image')
+            
+        """
+        # 생성한 이미지 개수만큼 selectbox 생성
+        multi_select = st.multiselect('select image you want',['picture' + str(i) for i in range(1, len(image)+1)])
+        # st.write(f'count:{len(multi_select)}')  # type:list
+        # st.write(multi_select)
 
+        #고른 이미지별 다운로드버튼 생성
+        for i in range(len(multi_select)):
+            st.download_button(label="Download " + multi_select[i], data=image[int(multi_select[i][-1])-1], file_name= multi_select[i] + '.png')
+        """
 
 main()
