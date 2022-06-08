@@ -151,6 +151,7 @@ model = BartForConditionalGeneration.from_pretrained(model_name)
 
 5. `nohup uvicorn main:app &` <br> `nohup streamlit run app.py &`
    * Cloud에서 app.py 및 main.py를 실행시킴으로써 24시간 사이트를 활용할 수 있도록 배포하면 됨
+   * 최종 Product Servin Site : `{Cloud IP 주소}:8501`
 
 ## 7. References
 ### Datasets
