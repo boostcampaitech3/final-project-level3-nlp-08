@@ -20,6 +20,10 @@ class DataConfig:
 
 
 @dataclass
+class TransformConfig:
+    data_transforms = None
+
+@dataclass
 class Stage1Hparams:
     double_z: bool = False
     z_channels: int = 256

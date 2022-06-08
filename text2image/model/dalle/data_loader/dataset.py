@@ -15,6 +15,7 @@ class CustomDataset(Dataset):
     def __getitem__(self, index):
         # image = Image.open(self.X.iloc[index])
         try:
+            # image = Image.open(self.X.iloc[index]).convert('RGB')
             image = Image.open(self.X.iloc[index]).convert('RGB')
             label = self.y.iloc[index]
             if self.transform:
@@ -26,11 +27,12 @@ class CustomDataset(Dataset):
     def __len__(self):
         return len(self.X)
 
-
 class CustomDataModule(pl.LightningDataModule):
     def __init__(self,
                 config,
                  data_dir: Optional[str] = None,
+                 data_transforms = None,
+                 data = None,
                  image_resolution: int = 256,
                  train_batch_size: int = 2,
                  valid_batch_size: int = 32,
@@ -39,6 +41,8 @@ class CustomDataModule(pl.LightningDataModule):
         
         super().__init__()
         self.config = config
+        self.data_transforms = data_transforms
+        self.data = data
         self.data_dir = data_dir
         self.image_resolution = image_resolution
         self.train_batch_size = train_batch_size
@@ -46,19 +50,7 @@ class CustomDataModule(pl.LightningDataModule):
         self.num_workers = num_workers
         self.pin_memory = pin_memory
 
-        self.train_transform = transforms.Compose(
-            [transforms.Resize(image_resolution),
-             transforms.RandomCrop(image_resolution),
-             transforms.ToTensor(),
-             transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])]
-        )
-        self.valid_transform = transforms.Compose(
-            [transforms.Resize(image_resolution),
-             transforms.CenterCrop(image_resolution),
-             transforms.ToTensor(),
-             transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])]
-        )
 
     def setup(self, stage=None):
-        self.trainset = CustomDataset(self.config.train, self.config.data_transforms['train'])
-        self.validset = CustomDataset(self.config.valid, self.config.data_transforms['val'])
+        self.trainset = CustomDataset(self.data['train'], self.data_transforms['train'])
+        self.validset = CustomDataset(self.data['valid'], self.data_transforms['val'])
