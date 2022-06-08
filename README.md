@@ -47,17 +47,31 @@
 ## 4. Structure
 ```
 .
-├── service - methods for frontend/backend
-│   └── ...
 ├── summarization - model for dialogue summarization
 │   └── ...
 ├── text2image - model for text-to-image (minDALL-E)
 │   └── ...
-├── .gitignore
-├── README.md
-├── app.py - Frontend Service
-├── main.py - Backend Service
-└── requirements.txt
+|-- README.md
+|-- app.py - Frontend Service
+|-- main.py - Backend Service
+|-- requirements.txt
+|-- client.json - Papago API ID & Key
+└── service - methods for frontend/backend
+    |-- __init__.py
+    |-- back_function.py  - Backend Method
+    |-- front_function.py - Frontend Method
+    |-- image_to_text.py  - Image to Text Model Method
+    └── utils             - Modules required to load the minDALL-E
+        |-- __init__.py
+        |-- config.py
+        |-- layers.py
+        |-- layers2.py
+        |-- sampling.py
+        |-- tokenizer.py
+        |-- transformer.py
+        |-- utils.py
+        └── vqgan.py
+
 ```
 
 
@@ -94,11 +108,27 @@ model = BartForConditionalGeneration.from_pretrained(model_name)
   * https://huggingface.co/chi0/kobart-dial-sum
 
 ## 6. Product Serving
+### 활용한 Cloud
+- Google Cloud Platform
+  - 활용 이유 1 : 무료로 GPU를 활용하기에 최적인 Cloud Platform
+  - 활용 이유 2 : Machine Learning을 위한 환경을 자동으로 구성해주는 기능 존재 
+
 ### HARDWARE
+- Machine 유형 : n1-standard-4
+  - vCPU : 4
+  - Memory : 15GB
+  - CPU 플랫폼 : Intel Haswell 
+  - File 시스템 공간
+  
+  ![image](https://user-images.githubusercontent.com/72785706/172453568-f37cbd97-7b94-49e3-9f88-ae4347f69c0e.png)
 
-### HOW?
-[임동진 TODO]
+- GPU : NVIDIA Tesla T4 1개
+  - Tesla T4 사양 : https://www.nvidia.com/ko-kr/data-center/tesla-t4/
 
+### Environment
+- HTTP 및 HTTPS 트래픽 활용
+
+- Port : 8501을 제외한 모든 포트는 외부에서 통과 불가능하도록 설정
 
 ## 7. References
 ### Datasets

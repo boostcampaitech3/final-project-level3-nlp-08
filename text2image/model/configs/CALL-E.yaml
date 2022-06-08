@@ -45,4 +45,4 @@ optimizer:
 experiment:
   local_batch_size: 2
   total_batch_size: 512
-  epochs: 3
+  epochs: 4
