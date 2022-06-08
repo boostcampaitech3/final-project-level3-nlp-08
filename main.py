@@ -15,6 +15,7 @@ tokenizer = AutoTokenizer.from_pretrained('chi0/kobart-dial-sum')
 global txt2imgModel
 txt2imgModel,_ = Rep_Dalle.from_pretrained("service/29052022_082436")
 
+
 app = FastAPI()
 
 global client

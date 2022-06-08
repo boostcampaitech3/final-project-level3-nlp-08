@@ -8,9 +8,6 @@ from sklearn.model_selection import train_test_split
 import pandas as pd
 
 
-
-
-
 def seed_everything(seed):
     """
     동일한 조건으로 학습을 할 때, 동일한 결과를 얻기 위해 seed를 고정시킵니다.
@@ -51,8 +48,9 @@ def labeling(dirname, result, prefix):  # 라벨링하는 함수
         for filename in filenames:
             if filename.startswith('.'):
                 continue
-            tmp_str = filename.split(".")[0].split("__")[0]
-            keyword = prefix + ' '.join(tmp_str.split("-")[:-1])
+            # tmp_str = filename.split(".")[0].split("__")[0]
+            # keyword = prefix + ' '.join(tmp_str.split("-")[:-1])
+            keyword = filename[:-4]
             result.append(keyword)
     except PermissionError:
         print('error')
@@ -60,7 +58,7 @@ def labeling(dirname, result, prefix):  # 라벨링하는 함수
 def check_unopen_img(df):
     for index in range(len(df)):
         try:
-            image = Image.open(df['path'].iloc[index]).convert('RGB')
+            image = Image.open(df['path'].iloc[index])
             label = df['label'].iloc[index]
         except e:
             print(e)
@@ -69,7 +67,7 @@ def check_unopen_img(df):
 def rm_unopen_img(df):
     for index in range(len(df)):
         try:
-            image = Image.open(df['path'].iloc[index]).convert('RGB')
+            image = Image.open(df['path'].iloc[index])
             label = df['label'].iloc[index]
         except:
             print(f'Image load error : {df["path"].iloc[index]}')
@@ -77,29 +75,14 @@ def rm_unopen_img(df):
 
 def mk_dataframe(seed):
     seed_everything(seed)
-    illust_all_path = []
-    search("./img_data/illustrations", illust_all_path)
-    scenery_all_path = []
-    search("./img_data/scenery", scenery_all_path)
-    vector_all_path = []
-    search("./img_data/vectors", vector_all_path)
-    dirname, illust_label = "./img_data/illustrations", []
-    labeling(dirname, illust_label, "an illustration image of ")
-    dirname, vector_label = "./img_data/vectors", []
-    labeling(dirname, vector_label, "a vector image of ")
-    dirname, scenery_label = "./img_data/scenery", []
-    labeling(dirname, scenery_label, "a scenery of ")
+    all_path = []
+    prefix = ''
+    search("../img_data", all_path)
+    dirname, img_label = "../img_data", []
+    labeling(dirname, img_label, prefix)
 
-    illust_df = pd.DataFrame(illust_all_path, columns=['path'])
-    illust_df['label'] = illust_label
-
-    scenery_df = pd.DataFrame(scenery_all_path, columns=['path'])
-    scenery_df['label'] = scenery_label
-
-    vector_df = pd.DataFrame(vector_all_path, columns=['path'])
-    vector_df['label'] = vector_label
-
-    df = pd.concat([illust_df, vector_df, scenery_df], ignore_index=True)
+    df = pd.DataFrame(all_path, columns=['path'])
+    df['label'] = img_label
 
     # if you want to check or remove wrong images, run below method. Then rerun mk_dataframe.
     # check_unopen_img(df)
@@ -126,7 +109,7 @@ def data_setting(df):
             ]),
     }
 
-    train, valid = train_test_split(df, test_size=0.2,
+    train, valid = train_test_split(df, test_size=0.1,
                                     shuffle=True,
                                     random_state=42)
     
