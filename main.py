@@ -6,7 +6,6 @@ from service.image_to_text import Rep_Dalle
 from transformers import BartForConditionalGeneration, AutoTokenizer
 
 import json
-import numpy as np
 
 # load model
 global model
@@ -51,8 +50,6 @@ def generate_summary(dialogue:str):
 
     return output_str
 
-
-################ Text2Image ################
 
 class Item(BaseModel):
     dialogue: str
