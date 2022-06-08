@@ -11,10 +11,7 @@ from nltk.tokenize import word_tokenize
 from nltk.tag import pos_tag
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
-lemmatizer = WordNetLemmatizer()
-nltk.download('omw-1.4')
-nltk.download('wordnet')
-nltk.download('stopwords')
+
 nltk.download('averaged_perceptron_tagger')
 nltk.download('punkt')
 
