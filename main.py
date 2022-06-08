@@ -5,6 +5,13 @@ from pydantic import BaseModel
 from service.image_to_text import Rep_Dalle
 from transformers import BartForConditionalGeneration, AutoTokenizer
 
+from fastapi import FastAPI
+from service.back_function import *
+from pydantic import BaseModel
+
+from service.image_to_text import Rep_Dalle
+from transformers import BartForConditionalGeneration, AutoTokenizer
+
 import json
 
 # load model
@@ -14,6 +21,7 @@ global tokenizer
 tokenizer = AutoTokenizer.from_pretrained('chi0/kobart-dial-sum')
 global txt2imgModel
 txt2imgModel,_ = Rep_Dalle.from_pretrained("service/29052022_082436")
+
 
 app = FastAPI()
 

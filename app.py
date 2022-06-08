@@ -12,14 +12,16 @@ from io import BytesIO
 # SETTING PAGE CONFIG TO WIDE MODE
 st.set_page_config(layout="wide")
 
+
 def preprocess(js_file):
     dialogue = js_file['data'][0]['body']['dialogue']
-    
+
     return_string = ""
     for string in dialogue:
         return_string += string['participantID'] + ": " + string['utterance'] + " \r\n "
 
     return return_string
+
 
 def main():
     st.title("Golden summary & Show image")
@@ -49,15 +51,16 @@ def main():
                 st.image(image, caption='Uploaded Image')
 
         # 생성한 이미지 개수만큼 selectbox 생성
-        multi_select = st.multiselect('select image you want',['picture' + str(i) for i in range(1, len(images)+1)])
+        multi_select = st.multiselect('select image you want', ['picture' + str(i) for i in range(1, len(images) + 1)])
 
-        #고른 이미지별 다운로드버튼 생성
+        # 고른 이미지별 다운로드버튼 생성
         for i in range(len(multi_select)):
-            img = images[int(multi_select[i][-1])-1]
+            img = images[int(multi_select[i][-1]) - 1]
             buf = BytesIO()
             img.save(buf, format="PNG")
             byte_img = buf.getvalue()
 
-            st.download_button(label="Download " + multi_select[i], data=byte_img, file_name= multi_select[i] + '.png')
+            st.download_button(label="Download " + multi_select[i], data=byte_img, file_name=multi_select[i] + '.png')
+
 
 main()
