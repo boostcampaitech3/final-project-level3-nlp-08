@@ -25,7 +25,8 @@ def main():
     st.title("Golden summary & Show image")
 
     uploaded_file = st.file_uploader("Input your dialogue data", type=["txt"])
-
+    print(uploaded_file)
+    
     if uploaded_file:
         dialogue_data = preprocess(txt_to_json(uploaded_file))  # str
         data = {'dialogue': dialogue_data}

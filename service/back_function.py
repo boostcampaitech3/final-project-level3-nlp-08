@@ -2,7 +2,7 @@ import json
 import urllib.request
 
 import numpy as np
-from text2image.model.dalle.utils.utils import set_seed, clip_score
+from service.utils.utils import set_seed, clip_score
 import clip
 
 ################ 전처리를 위한 Module 다운 ################
@@ -99,7 +99,7 @@ def txt2img(txt2imgModel, text):
     images = np.transpose(images, (0, 2, 3, 1))
 
     # CLIP Re-ranking
-    model_clip, preprocess_clip = clip.load("ViT-B/32", device=device)
+    model_clip, preprocess_clip = clip.load("ViT-B/32", device=device, jit=False)
     model_clip.to(device=device)
     ranks, scores = clip_score(prompt=text,
                     images=images,
