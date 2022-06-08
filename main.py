@@ -13,8 +13,8 @@ model = BartForConditionalGeneration.from_pretrained('chi0/kobart-dial-sum')
 global tokenizer
 tokenizer = AutoTokenizer.from_pretrained('chi0/kobart-dial-sum')
 global txt2imgModel
-# txt2imgModel,_ = Rep_Dalle.from_pretrained("service/29052022_082436")
-txt2imgModel,_ = Rep_Dalle.from_pretrained('./text2image/model/tf_model/CALL-E/0608')
+txt2imgModel,_ = Rep_Dalle.from_pretrained("service/29052022_082436")
+
 
 app = FastAPI()
 
