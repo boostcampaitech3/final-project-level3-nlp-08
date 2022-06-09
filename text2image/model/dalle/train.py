@@ -3,9 +3,11 @@
 # ------------------------------------------------------------------------------------
 
 import torch
+from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
-# sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import sys, os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath('train.py'))))
 from dalle.models import Rep_Dalle
 from data_loader.dataset import CustomDataModule
 from data_loader.dataloader import CustomDataLoader
@@ -14,9 +16,9 @@ from logger.logger import setup_callbacks
 
 seed = 42
 path_upstream = 'minDALL-E/1.3B'
-config_file = './configs/CALL-E.yaml'
+config_file = '../configs/CALL-E.yaml'
 config_downstream = config_file
-result_path = './base_result'
+result_path = '../tf_model'
 data_dir = './img_data'
 n_gpus = 1
 train, val = None, None
@@ -43,31 +45,34 @@ def main():
     model, config = Rep_Dalle.from_pretrained(path_upstream, config_downstream)
     
     # Add config for setup callbacks & data modules
-    config.data_trainsforms = data_transforms
-    config.train = train
-    config.valid = valid
-    config.result_path = result_path
-    config.config_downstream = config_downstream
-    
+    # config.data_transforms = data_transforms
+    # config.train = train
+    # config.valid = valid
+    # config.result_path = result_path
+    # config.config_downstream = config_downstream
+
     # Setup callbacks
-    ckpt_callback, logger, logger_img = setup_callbacks(config)
+    ckpt_callback, logger, logger_img = setup_callbacks(config=config, result_path=result_path,
+                                                        config_downstream=config_downstream)
 
     # Build data modules
     dataset = CustomDataModule(config=config,
-                                data_dir=data_dir,
+                               data_dir=data_dir,
+                               data={'train': train, 'valid': valid},
+                               data_transforms=data_transforms,
                                image_resolution=config.dataset.image_resolution,
                                train_batch_size=config.experiment.local_batch_size,
                                valid_batch_size=config.experiment.valid_batch_size,
                                num_workers=16)
     dataset.setup()
-    train_dataloader = CustomDataLoader(dataset.trainset,
-                          batch_size=dataset.train_batch_size,
-                          num_workers=dataset.num_workers,
-                          pin_memory=True)
-    valid_dataloader = CustomDataLoader(dataset.validset,
-                          batch_size=dataset.valid_batch_size,
-                          num_workers=dataset.num_workers,
-                          pin_memory=True)
+    train_dataloader = DataLoader(dataset=dataset.trainset,
+                                        batch_size=dataset.train_batch_size,
+                                        num_workers=dataset.num_workers,
+                                        pin_memory=True)
+    valid_dataloader = DataLoader(dataset=dataset.validset,
+                                        batch_size=dataset.valid_batch_size,
+                                        num_workers=dataset.num_workers,
+                                        pin_memory=True)
     
     print(f"len(train_dataset) = {len(dataset.trainset)}")
     print(f"len(valid_dataset) = {len(dataset.validset)}")

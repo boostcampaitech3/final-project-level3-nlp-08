@@ -37,11 +37,11 @@ class ImageLogger(Callback):
             self.log_img(pl_module, batch, current_epoch=trainer.current_epoch, split="test")
 
 
-def setup_callbacks(config):
+def setup_callbacks(config,result_path,config_downstream):
     # Setup callbacks
     now = datetime.now().strftime('%d%m%Y_%H%M%S')
-    result_path = os.path.join(config.result_path,
-                               os.path.basename(config.config_downstream).split('.')[0],
+    result_path = os.path.join(result_path,
+                               os.path.basename(config_downstream).split('.')[0],
                                now)
     ckpt_path = os.path.join(result_path, 'ckpt')
     log_path = os.path.join(result_path, 'log')

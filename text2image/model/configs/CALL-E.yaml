@@ -1,5 +1,5 @@
 dataset:
-  dataset: imagenet
+  dataset: custom
   image_resolution: 256
 
 stage1:
@@ -44,5 +44,5 @@ optimizer:
 
 experiment:
   local_batch_size: 2
-  total_batch_size: 128
+  total_batch_size: 512
   epochs: 4

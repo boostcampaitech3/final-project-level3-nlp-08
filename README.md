@@ -42,7 +42,8 @@
 
 
 ## 3. 시연 영상
-![데모_NLP_08_CALL-E](https://user-images.githubusercontent.com/69616444/172341768-bcd64f1d-d197-45dd-a83e-e170c9932561.gif)
+![최종-데모-영상 (1)](https://user-images.githubusercontent.com/69616444/172797376-e849ba3a-a633-48f2-bd6d-a05d4fef3ca2.gif)
+
 
 ## 4. Structure
 ```
@@ -64,8 +65,8 @@
     └── utils             - Modules required to load the minDALL-E
         |-- __init__.py
         |-- config.py
-        |-- layers.py
-        |-- layers2.py
+        |-- vqgan_layer.py
+        |-- transfomer_layer.py
         |-- sampling.py
         |-- tokenizer.py
         |-- transformer.py
@@ -129,6 +130,29 @@ model = BartForConditionalGeneration.from_pretrained(model_name)
 - HTTP 및 HTTPS 트래픽 활용
 
 - Port : 8501을 제외한 모든 포트는 외부에서 통과 불가능하도록 설정
+
+## Cloud에 서비스 활용 방법
+0. `pip install -r requirements.txt --use-feature=2020-resolver`
+   * pip이 설치 되어 있지 않다면 pip 설치가 선행되어야 
+
+1. service directory, main.py, app.py를 Cloud에 Load함
+
+2. Fine-Tuning 시킨 Text to Image 모델에 대해 저장된 State들을 service 폴더 아래에 저장함
+
+3. main.py의 `txt2imgModel,_ = Rep_Dalle.from_pretrained({HERE})`부분에서 {HERE}에 Model State를 저장한 경로를 넣어줌
+
+4. Papago API에서 번역 API를 신청한 후, API ID 및 Private Key를 client.json 파일에 넣어줌
+   * client.json 형식
+    ```
+    {
+        "client_id":{Papago API ID},
+        "client_secret":{Papago API Key}
+    }
+    ```
+
+5. `nohup uvicorn main:app &` <br> `nohup streamlit run app.py &`
+   * Cloud에서 app.py 및 main.py를 실행시킴으로써 24시간 사이트를 활용할 수 있도록 배포하면 됨
+   * 최종 Product Servin Site : `{Cloud IP 주소}:8501`
 
 ## 7. References
 ### Datasets
