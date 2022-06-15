@@ -61,7 +61,7 @@
     |-- __init__.py
     |-- back_function.py  - Backend Method
     |-- front_function.py - Frontend Method
-    |-- image_to_text.py  - Image to Text Model Method
+    |-- text_to_image.py  - Text to Image Model Method
     └── utils             - Modules required to load the minDALL-E
         |-- __init__.py
         |-- config.py
