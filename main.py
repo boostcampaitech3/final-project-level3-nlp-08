@@ -2,7 +2,6 @@ from fastapi import FastAPI
 from service.back_function import *
 from pydantic import BaseModel
 
-from service.image_to_text import Rep_Dalle
 from transformers import BartForConditionalGeneration, AutoTokenizer
 
 from fastapi import FastAPI
