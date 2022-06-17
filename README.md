@@ -24,6 +24,7 @@
 
 ### Docs
 * [Presentation](https://github.com/boostcampaitech3/final-project-level3-nlp-08/blob/main/assets/NLP_08_CALL-E.pdf)
+* [Wrapup Report](https://github.com/boostcampaitech3/final-project-level3-nlp-08/blob/main/assets/%EC%B5%9C%EC%A2%85%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8_NLP_%ED%8C%80%20%EB%A6%AC%ED%8F%AC%ED%8A%B8(08%EC%A1%B0).pdf)
 
 ### WHY?
 - 각 채팅방의 특징을 잘 표현하는 대표 이미지 생성
